@@ -97,12 +97,49 @@ The resized images will be saved in the ``data/<scene_name>/images`` folder spec
 
 3. Create the transform.json file
 ```bash
-python -m  optimized.normalize_with_aabb --cfg_path path/to/cfg.yml
+python scripts\normalize_with_aabb.py --cfg_path cfg\<scene_name>.yml
 ```
+**Rotation Matrix Initialization**
+Each scene allows you to define a custom rotation matrix.
+Press the R key in the VisPy viewer to print the current rotation matrix in YAML format. This makes it easy to copy and paste into your configuration file (e.g., rotation_initial: in a .yml file).
+
+**Manual AABB Adjustment**
+The Axis-Aligned Bounding Box (AABB) can be manually specified in your config file to override the default normalization. This is useful for cropping, focusing on a subregion, or fine-tuning reconstruction bounds.
+
+```python
+# transform.json
+# python scripts\normalize_with_aabb.py
+rotation: True
+rotation_initial: #null
+  - [0.77892503, -0.25715966, 0.57196565]
+  - [-0.62710305, -0.32549969, 0.70766639]
+  - [0.00419140, -0.90990047, -0.41480546]
+
+#compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17)
+percentile_bbox:
+  lower: 1.0
+  upper: 99.8
+  padding: 0.17
+
+rot_order: [0, 1, 2] # apply order rotation
+# axis order x, y, z - alpha, beta, gamma
+angles: [75, 0, 0] # alpha, beta, gamma
+shift: [-0.1, -0.2, -0.3]
+visualize: True
+
+# aabb
+aabb_adjust:
+  aabb_min: [0, 0, 0.85]
+  aabb_max: [0, 0, 0.1]
+
+```
+<p align="center">
+  <img src="docs/post_aabb.PNG" alt="Ray 1" width="400px">
+</p>
 
 1. precompute the rays for the whole dataset of images and store them into a ```$Scence_ray_data.npz ```
-```python
-python -m  optimized.precompute_rays --cfg_path path/to/cfg.yml
+```bash
+python -m  scripts.precompute_rays --cfg_path path/to/cfg.yml
 ```
 
 1. train the nerf model

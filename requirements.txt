@@ -1,2 +1,6 @@
 tqdm
 omegaconf
+scipy
+open3d
+vispy
+PyQt6

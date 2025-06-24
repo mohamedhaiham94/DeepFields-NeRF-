@@ -8,6 +8,7 @@ from vispy.scene import visuals
 
 from scipy.spatial.transform import Rotation as R
 import open3d as o3d
+import yaml
 
 
 def rotation_matrix_x(theta):
@@ -221,6 +222,7 @@ def flip_colmap_to_nerf_correct(
     shift=[0, 0, 0],
     angles=[0, 0, 0],
     rot_order=[0, 0, 0],
+    rotation_initial=None,
     rotation=True,
 ):
     """
@@ -250,13 +252,11 @@ def flip_colmap_to_nerf_correct(
         ]
         Rot = np.eye(3)
 
-        # Rot = np.array(
-        #     [
-        #         [-0.79301971, 0.30627212, -0.52660909],
-        #         [-0.5963153, -0.56707855, 0.56818129],
-        #         [-0.12461063, 0.76460402, 0.63233921],
-        #     ]
-        # )
+        if rotation_initial is not None:
+            Rot = np.array(rotation_initial)
+            print(f"Rotation matrix after applying initial rotation:")
+            print(Rot)
+
         for axis in rot_order:
             Rot = rotation_funcs[axis] @ Rot
 
@@ -283,7 +283,9 @@ def flip_colmap_to_nerf_correct(
     return points_transformed, frames
 
 
-def compute_scene_aabb(points, percentile_bounds=(1.0, 99.0), padding=0.02):
+def compute_scene_aabb(
+    points, aabb_adjust, percentile_bounds=(1.0, 99.0), padding=0.02
+):
     """
     Compute the Axis-Aligned Bounding Box (AABB) of the scene points.
 
@@ -322,6 +324,9 @@ def compute_scene_aabb(points, percentile_bounds=(1.0, 99.0), padding=0.02):
     # Compute efficiency metrics
     cube_volume = 8.0  # Volume of [-1,1]³ cube
     volume_efficiency = volume / cube_volume
+
+    aabb_min = aabb_min + np.array(aabb_adjust["aabb_min"])
+    aabb_max = aabb_max + np.array(aabb_adjust["aabb_max"])
 
     aabb_info = {
         "aabb_min": aabb_min.tolist(),
@@ -444,6 +449,11 @@ def display_points(
             transform_matrix = view.camera.transform.matrix
             rotation_matrix = transform_matrix[:3, :3]
             print("Current Rotation Matrix (on 'R'):\n", rotation_matrix)
+            # Convert to Python list of lists (for YAML)
+            print("\nRotation_initial:")
+            for row in rotation_matrix:
+                formatted_row = ", ".join(f"{val: .8f}" for val in row)
+                print(f"  - [{formatted_row}]")
 
     app.run()
 
@@ -458,7 +468,7 @@ def filter_statistical_outliers(points, nb_neighbors=20, std_ratio=2.0):
     return filtered_points, ind
 
 
-def compute_percentile_bbox(points, lower=1.0, upper=99.85, padding=0.1):
+def compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17):
     """
     points: Nx3 array of 3D points.
 
@@ -580,7 +590,12 @@ def main():
 
     # Compute normalization parameters
     print("Computing normalization parameters...")
-    center, scale = compute_percentile_bbox(cleaned_points)
+    center, scale = compute_percentile_bbox(
+        cleaned_points,
+        lower=cfg.percentile_bbox["lower"],
+        upper=cfg.percentile_bbox["upper"],
+        padding=cfg.percentile_bbox["padding"],
+    )
     print(f"Normalization center: [{center[0]:.3f}, {center[1]:.3f}, {center[2]:.3f}]")
     print(f"Normalization scale: {scale:.6f}")
 
@@ -601,13 +616,17 @@ def main():
         shift=cfg.shift,
         angles=cfg.angles,
         rot_order=cfg.rot_order,
+        rotation_initial=cfg.rotation_initial,
         rotation=cfg.rotation,
     )
 
     # Compute scene AABB after all transformations
     print("Computing scene AABB...")
     aabb_info = compute_scene_aabb(
-        points_transformed, percentile_bounds=(1.0, 99.0), padding=0.02
+        points_transformed,
+        aabb_adjust=cfg.aabb_adjust,
+        percentile_bounds=(1.0, 99.0),
+        padding=0.02,
     )
 
     # Compute near/far bounds
