@@ -1,0 +1,46 @@
+# General settings
+scene_name: "real_scene"
+output_dir: "./outputs/${scene_name}"
+checkpoint_dir: "${output_dir}/checkpoints"
+transforms_json: "transforms_${scene_name}.json"
+rays_file: "${scene_name}_ray_data.npz"
+
+# colamp -> transforms.json
+colmap_dir: "./data/${scene_name}"
+
+
+# transform.json
+rotation: True
+rot_order: [1,0,2] # apply order rotation 
+# axis order x, y, z - alpha, beta, gamma
+angles: [10, 12, 0] # alpha, beta, gamma
+shift: [0, 0, 0]
+visualize: True
+
+# slicing 
+aabb_slice: True
+vol_extracted_dir: "colored_occupancy_${scene_name}.pth"
+sliced_vol_path: colored_occupancy_${scene_name}_sliced.pth
+
+
+# Training options
+batch_size: 4096 # 2048 # 1024 
+num_epochs: 10
+lr: 0.0005
+downscale: 4
+
+# Model options
+nerf_type: large
+ngp: true
+hidden_dim: 256
+pos_L: 10
+dir_L: 4
+
+# Rendering options
+N_samples: 64
+N_importance: 128
+near: 1.0
+far: 4.0
+white_bg: false
+chunk_size: 32768
+use_memmap: False

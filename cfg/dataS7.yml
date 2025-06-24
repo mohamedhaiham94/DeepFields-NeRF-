@@ -1,0 +1,48 @@
+# General settings
+scene_name: "data_S7"
+output_dir: "./outputs/${scene_name}"
+checkpoint_dir: "${output_dir}/checkpoints"
+transforms_json: "transforms_${scene_name}.json"
+rays_file: "${scene_name}_ray_data.npz"
+
+# resize images
+workspace: data/${scene_name}
+img_dir_original: ${workspace}/images_original
+new_images_dir: ${workspace}/images
+newSize: [648, 648] # 2592 / 4
+
+# transform.json
+rotation: True
+rot_order: [0,1,2] # apply order rotation 
+# axis order x, y, z - alpha, beta, gamma
+angles: [15, -20, 0] # alpha, beta, gamma Rot = rotation_matrix_y(np.radians(-20)) @ rotation_matrix_x(np.radians(15))
+shift: [0, 0, 0]
+visualize: True
+
+# slicing 
+aabb_slice: True
+vol_extracted_dir: "colored_occupancy_dataS7.pth"
+sliced_vol_path: colored_occupancy_${scene_name}_sliced.pth
+
+
+# colamp -> transforms.json
+colmap_dir: "./data/${scene_name}"
+
+# Training options
+batch_size: 4096 # 2048 # 1024
+num_epochs: 30 #10
+lr: 0.0005
+
+# Model options
+nerf_type: large
+ngp: true
+hidden_dim: 256
+pos_L: 10
+dir_L: 4
+
+# Rendering options
+N_samples: 64
+N_importance: 128
+white_bg: false
+chunk_size: 32768
+use_memmap: False
