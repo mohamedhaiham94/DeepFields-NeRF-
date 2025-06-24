@@ -137,6 +137,7 @@ aabb_adjust:
   <img src="docs\post_aabb.PNG" alt="Ray 1" width="400px">
 </p>
 
+
 1. precompute the rays for the whole dataset of images and store them into a ```$Scence_ray_data.npz ```
 ```bash
 python -m  scripts.precompute_rays --cfg_path path/to/cfg.yml

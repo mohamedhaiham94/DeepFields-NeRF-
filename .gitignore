@@ -10,6 +10,6 @@ data/blender_scene/colmap_text_original/
 
 .venv/
 colmap
-*.png
+
 *.json
 .vscode/
