@@ -272,7 +272,11 @@ The vanilla NeRF is using the OpenGL coordinate system and colmap uses the OpenC
 | COLMAP/OpenCV      | right | down | forward  | +X right, +Y down, +Z into scene |
 | NeRF/OpenGL | right | up   | backward | +X right, +Y up, -Z into scene   |
 
-![Data convention](docs\coord_sys.png)
+<p align="center">
+  <img src="docs\coord_sys.png" alt="Ray 1" width="700px">
+</p>
+
+
 
 **Proper similarity transformation:** $T_{4x4}'​=F_{\text{flip}} \cdot T_{4x4} \cdot F_{\text{flip}}^⊤$
 ```python
