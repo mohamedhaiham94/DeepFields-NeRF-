@@ -170,7 +170,7 @@ python scripts\post_process_vol.py --cfg_path cfg\<scene_name>.yml --visualize s
         <sub><b>Before Slicing</b></sub>
       </td>
       <td align="center">
-        <img src="docs/post_forest.PNG" alt="Post Forest" width="400px"><br>
+        <img src="docs/post_forest.png" alt="Post Forest" width="400px"><br>
         <sub><b>After Slicing</b></sub>
       </td>
     </tr>
