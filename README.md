@@ -72,7 +72,7 @@ project_root/
 │   ├── precompute_rays.py          # Precomputes ray directions as <scene_name>_ray_data.npz
 │   ├── sampling.py                 # Sampler class for stratified/hierarchical sampling 
 │   ├── train.py                    # Training script for NeRF 
-│   ├── extract_occupancy_volume.py # Extracts colored occupancy volume from trained model
+│   ├── extract_vol.py              # Extracts colored occupancy volume from trained model
 │   └── show_slice_vol.py           # Utility to visualize occupancy slices
 │
 ├── outputs/                        # Created output files from from training
@@ -138,19 +138,47 @@ aabb_adjust:
 </p>
 
 
-1. precompute the rays for the whole dataset of images and store them into a ```$Scence_ray_data.npz ```
+4. Precompute the camera rays for the entire dataset and save them to a file for faster training or evaluation ```<scene_name>_ray_data.npz ```
 ```bash
-python -m  scripts.precompute_rays --cfg_path path/to/cfg.yml
+python scripts\precompute_rays.py --cfg_path cfg\<scene_name>.yml
 ```
 
-1. train the nerf model
-```$Scence_ray_data.npz ```
-```python
-python -m  optimized.train --cfg_path path/to/cfg.yml
-python optimized\train.py --cfg_path cfg\blender_scene.yml  
+5. Train the nerf model
+```bash
+python scripts\train.py --cfg_path cfg\<scene_name>.yml  
+```
+After training, the NeRF model will be saved to:
+```outputs\<scene_name>\checkpoints\nerf_final.pth```
+
+6. Extract volume with the pretrained network
+```bash
+python python scripts\extract_vol.py --cfg_path cfg\<scene_name>.yml
+```
+The volume wil be saved to: ```outputs\<scene_name>\volume.pth```
+
+7. Postprocess/clean the volume
+Since we sample density values across the entire 3D volume of the cube, we clean the volume via slicing the it using the axis-aligned bounding box (AABB).
+```bash
+python scripts\post_process_vol.py --cfg_path cfg\<scene_name>.yml --visualize sliced
 ```
 
-1. extract volume with the pretrained network
-```python
-python optimized\extract_occupancy_volume.py --checkpoint path\to\trained_model --output colored_occupancy_{scene_name}.pth --resolution 512 --extract-rgb
+<p align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="docs/pre_forest.PNG" alt="Pre Forest" width="400px"><br>
+        <sub><b>Before Slicing</b></sub>
+      </td>
+      <td align="center">
+        <img src="docs/post_forest.PNG" alt="Post Forest" width="400px"><br>
+        <sub><b>After Slicing</b></sub>
+      </td>
+    </tr>
+  </table>
+</p>
+
+8. Create the volume format for Paraview
+
+```bash
+python scripts\post_process_vol.py --cfg_path cfg\<scene_name>.yml --visualize sliced
 ```

@@ -8,8 +8,11 @@ data/blender_scene/images_original/
 data/blender_scene/images/
 data/blender_scene/colmap_text_original/
 
+outputs/
+
 .venv/
 colmap
 
 *.json
 .vscode/
+*.npz

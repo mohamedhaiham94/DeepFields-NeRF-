@@ -4,3 +4,6 @@ scipy
 open3d
 vispy
 PyQt6
+tensorboard
+scikit-image
+matplotlib
