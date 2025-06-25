@@ -7,3 +7,4 @@ PyQt6
 tensorboard
 scikit-image
 matplotlib
+napari[all]

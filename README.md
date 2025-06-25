@@ -46,39 +46,40 @@ Download and install COLMAP for structure-from-motion and multi-view stereo reco
 
 ```text
 project_root/
-├── data/                           # Contains raw input images and colmap outputs
+├── data/                           # Contains raw input images and colmap outputs.
 │   └── scene_name
-│       ├── images/                 # Resized input images (used for training)
-│       ├── images_original/        # Original high-resolution input images
-│       └── colmap_text_original/   # COLMAP sparse reconstruction (in text format)
+│       ├── images/                 # Resized input images (used for training).
+│       ├── images_original/        # Original high-resolution input images.
+│       └── colmap_text_original/   # COLMAP sparse reconstruction (in text format).
 │
-├── configs/                        # YAML configuration files for each scene scene
-│   ├── blender_scene.yml           # Config file for the blender scene  
-│   ├── dataS7.yml                  # Config file for the DataS7 scene  
-│   ├── real_scene.yml              # Config file for the Subset scene  
-│   └── <scene_name>.yml            # Config file for the corresponding scene
+├── configs/                        # YAML configuration files for each scene.
+│   ├── blender_scene.yml           # Config file for the blender scene.  
+│   ├── dataS7.yml                  # Config file for the DataS7 scene.  
+│   ├── real_scene.yml              # Config file for the Subset scene.  
+│   └── <scene_name>.yml            # Config file for the corresponding scene.
 │
-├── outputs/                        # Outputs from training or extraction
+├── outputs/                        # Outputs from training or extraction.
 │   └── <scene_name>
-│       ├── checkpoints/            # Saved model checkpoints
-│       └── logs                    # TensorBoard logs
+│       ├── checkpoints/            # Saved model checkpoints.
+│       └── logs                    # TensorBoard logs.
 │
 ├── scripts/    
-│   ├── instantngp.py               # Instant-NGP variant of NeRF
-│   ├── vanilla_nerf.py             # Standard NeRF implementation
-│   ├── resize_images.py            # Resizes input images to desired resolution
-│   ├── dataset.py                  # Dataset class for NeRF data loading
-│   ├── normalize_with_aabb.py      # Normalizes scene and write the transforms_<scene_name>.json
-│   ├── precompute_rays.py          # Precomputes ray directions as <scene_name>_ray_data.npz
-│   ├── sampling.py                 # Sampler class for stratified/hierarchical sampling 
-│   ├── train.py                    # Training script for NeRF 
-│   ├── extract_vol.py              # Extracts colored occupancy volume from trained model
-│   └── show_slice_vol.py           # Utility to visualize occupancy slices
+│   ├── instantngp.py               # Instant-NGP variant of NeRF.
+│   ├── vanilla_nerf.py             # Standard NeRF implementation.
+│   ├── resize_images.py            # Resizes input images to desired resolution.
+│   ├── dataset.py                  # Dataset class for NeRF data loading.
+│   ├── normalize_with_aabb.py      # Normalizes scene and write the transforms_<scene_name>.json.
+│   ├── precompute_rays.py          # Precomputes ray directions as <scene_name>_ray_data.npz.
+│   ├── sampling.py                 # Sampler class for stratified/hierarchical sampling.
+│   ├── train.py                    # Training script for NeRF.
+│   ├── extract_vol.py              # Extracts colored occupancy volume from trained model.
+│   ├── write_format.py             # Writes the tiff format for napari and paraview.
+│   └── post_process_vol.py         # Postprocess and clean the volume.
 │
-├── outputs/                        # Created output files from from training
-│   └── <scene_name>/               # Outputs related to the specific scene
-│       ├── checkpoints/            # Trained model checkpoints
-│       └── logs/                   # TensorBoard logs for training visualization
+├── outputs/                        # Created output files from from training.
+│   └── <scene_name>/               # Outputs related to the specific scene.
+│       ├── checkpoints/            # Trained model checkpoints.
+│       └── logs/                   # TensorBoard logs for training visualization.
 │
 └── README.md                        # Project documentation
 ```

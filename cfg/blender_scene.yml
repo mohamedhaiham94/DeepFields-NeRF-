@@ -41,7 +41,6 @@ aabb_adjust:
 # extraction
 checkpoint: "${checkpoint_dir}/nerf_final.pth"
 volume_output_path: "${output_dir}/volume.pth"
-
 # slicing
 aabb_slice: True
 sliced_vol_path: "${output_dir}/volume_sliced.pth"
