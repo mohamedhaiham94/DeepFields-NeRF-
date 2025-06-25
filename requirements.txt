@@ -8,3 +8,4 @@ tensorboard
 scikit-image
 matplotlib
 napari[all]
+pyvista

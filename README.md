@@ -73,7 +73,7 @@ project_root/
 │   ├── sampling.py                 # Sampler class for stratified/hierarchical sampling.
 │   ├── train.py                    # Training script for NeRF.
 │   ├── extract_vol.py              # Extracts colored occupancy volume from trained model.
-│   ├── write_format.py             # Writes the tiff format for napari and paraview.
+│   ├── write_format.py             # Writes the tiff and vti format for napari and paraview.
 │   └── post_process_vol.py         # Postprocess and clean the volume.
 │
 ├── outputs/                        # Created output files from from training.
@@ -181,8 +181,14 @@ python scripts\post_process_vol.py --cfg_path cfg\<scene_name>.yml --visualize s
 8. Create the volume format for Paraview
 
 ```bash
-python scripts\post_process_vol.py --cfg_path cfg\<scene_name>.yml --visualize sliced
+python scripts\write_format.py --cfg_path cfg\blender_scene.yml
 ```
+This script will generate the following output folders: ```napari```, ```paraview```, ```vti``` in the ```output\<scene_name>``` directory. Each folder will contain the binary and RGB volume representations in their respective file formats (.tif, tiff, .vti), ready for visualization in tools like Napari or ParaView.
+
+<p align="center">
+  <img src="docs\paraview.PNG" alt="Ray 1" width="400px">
+</p>
+
 
 ---
 

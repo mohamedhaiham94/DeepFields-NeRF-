@@ -5,6 +5,7 @@ import tifffile
 import napari
 import argparse
 from pathlib import Path
+import pyvista as pv
 
 
 def create_dir(path):
@@ -37,13 +38,61 @@ def create_volumes_from_points(points, rgbs, grid_size, fill_value=255):
     return binary_volume, rgb_volume
 
 
+def save_volume_as_vti(volume, path):
+    """
+    Save a 3D numpy volume as a VTK ImageData (.vti file).
+    This method uses pyvista.ImageData() which is the recommended
+    replacement for the deprecated pyvista.UniformGrid().
+    """
+    # Convert volume to shape (Z, Y, X) as required by VTK
+    if volume.ndim == 4:  # RGB volume
+        # For VTI, typically scalar data is expected.
+        # If you need to save RGB, you might need to save each channel separately
+        # or convert to a single scalar representation (e.g., grayscale).
+        # Here, converting to grayscale for simplicity.
+        volume = np.transpose(volume, (2, 1, 0, 3))  # (Z, Y, X, 3)
+        volume = np.mean(volume, axis=-1).astype(np.uint8)  # Convert to grayscale
+    else:
+        volume = np.transpose(volume, (2, 1, 0))  # (Z, Y, X)
+
+    # Create a PyVista ImageData object
+    # This replaces pv.UniformGrid()
+    grid = pv.ImageData()
+
+    # Set the dimensions of the grid.
+    # PyVista's ImageData expects dimensions to be (nx, ny, nz)
+    # where nx, ny, nz are the number of points along each axis.
+    # For a volume of shape (Z, Y, X), the number of points is (X+1, Y+1, Z+1)
+    # or (X, Y, Z) if using cell data and dimensions are number of cells + 1.
+    # Given your original code used `volume.shape + 1`, we'll stick to that
+    # as it implies number of points.
+    grid.dimensions = np.array(volume.shape[::-1]) + 1 # Reverse shape to (X, Y, Z) and add 1
+
+    # Set the spacing between points
+    grid.spacing = (1, 1, 1)
+
+    # Set the origin of the grid
+    grid.origin = (0, 0, 0)
+
+    # Assign the volume data to the grid's cell data.
+    # VTK expects Fortran order (column-major) for flattened arrays.
+    # The `flatten(order="F")` ensures this.
+    grid.cell_data["values"] = volume.flatten(order="F")
+
+    # Ensure the path is a Path object
+    path = Path(path)
+
+    # Save the grid to a .vti file
+    grid.save(path)
+    print(f"Saved VTK volume to: {path}")
+    
+    
 def save_volume_as_tiff(volume, path, paraview_format=False):
     path = Path(path)
 
     print(f"Input volume range before saving: [{volume.min()}, {volume.max()}]")
     print(f"Input volume dtype: {volume.dtype}")
 
-    
     if paraview_format:
         print(f"Saving volume in ParaView format to {path}")
         # ParaView format - NO METADATA to avoid interpretation issues
@@ -86,11 +135,11 @@ def save_volume_as_tiff(volume, path, paraview_format=False):
                 photometric="rgb" if volume_paraview.shape[-1] == 3 else "minisblack",
             )
 
-    else:  
+    else:
         # Standard TIFF format
         volume_standard = volume.astype(np.uint8)
         tifffile.imwrite(path, volume_standard, imagej=False, compression=None)
-        
+
     print(f"Volume saved as {path}")
 
 
@@ -156,7 +205,9 @@ def main():
     output_dir = Path(cfg.output_dir)
     napari_dir = output_dir / "napari"
     paraview_dir = output_dir / "paraview"
-    for dir_path in [napari_dir, paraview_dir]:
+    vti_dir = output_dir / "vti"
+    
+    for dir_path in [napari_dir, paraview_dir, vti_dir]:
         create_dir(dir_path)
 
     # Save files in Napari format
@@ -167,10 +218,20 @@ def main():
     # Save files in ParaView format (.tiff extension)
     print("\nSaving ParaView format files...")
     print("Saving binary volume for ParaView...")
-    save_volume_as_tiff(binary_volume, paraview_dir / f"{base_name}_binary.tiff", paraview_format=True)
+    save_volume_as_tiff(
+        binary_volume, paraview_dir / f"{base_name}_binary.tiff", paraview_format=True
+    )
     print("\nSaving RGB volume for ParaView...")
-    save_volume_as_tiff(rgb_volume, paraview_dir / f"{base_name}_rgb.tiff", paraview_format=True)
-    
+    save_volume_as_tiff(
+        rgb_volume, paraview_dir / f"{base_name}_rgb.tiff", paraview_format=True
+    )
+
+    # Save VTK volumes (.vti) to paraview_dir
+    print("\nSaving binary volume for VTI...")
+    save_volume_as_vti(binary_volume, vti_dir / f"{base_name}_binary.vti")
+    print("\nSaving RGB volume for VTI...")
+    save_volume_as_vti(rgb_volume, vti_dir / f"{base_name}_rgb.vti")
+
 
 if __name__ == "__main__":
     main()
