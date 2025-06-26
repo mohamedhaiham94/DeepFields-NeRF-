@@ -16,3 +16,7 @@ colmap
 *.json
 .vscode/
 *.npz
+colmap*
+
+data/real_scene
+data/test_scene

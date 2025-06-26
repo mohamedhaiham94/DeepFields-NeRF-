@@ -93,7 +93,11 @@ python scripts\resize_images.py --cfg_path cfg\<scene_name>.yml
 ```
 The resized images will be saved in the ``data/<scene_name>/images`` folder specified in your config file.
 
-2. Run COLMAP on the resized images and export the scene in text format inside the image directory, in a folder named colmap_text_original ```colmap_text_original```.
+1. Run COLMAP on the resized images and export the scene in text format inside the image directory, in a folder named ```colmap_text```.
+
+```bash
+python .\scripts\run_colmap.py --workspace .\data\<scene_name>\ --images images_original\
+```
 
 
 3. Create the transform.json file
@@ -181,7 +185,7 @@ python scripts\post_process_vol.py --cfg_path cfg\<scene_name>.yml --visualize s
 8. Create the volume format for Paraview
 
 ```bash
-python scripts\write_format.py --cfg_path cfg\blender_scene.yml
+python scripts\write_format.py --cfg_path cfg\<scene_name>.yml
 ```
 This script will generate the following output folders: ```napari```, ```paraview```, ```vti``` in the ```output\<scene_name>``` directory. Each folder will contain the binary and RGB volume representations in their respective file formats (.tif, tiff, .vti), ready for visualization in tools like Napari or ParaView.
 

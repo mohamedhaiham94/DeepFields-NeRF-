@@ -1,0 +1,62 @@
+# General settings
+scene_name: "real_scene" 
+output_dir: "./outputs/${scene_name}"
+checkpoint_dir: "${output_dir}/checkpoints"
+transforms_json: "transforms_${scene_name}.json"
+rays_file: "${scene_name}_ray_data.npz"
+
+# resize images
+# python scripts\resize_images.py
+workspace: data/${scene_name}
+image_dir: ${workspace}/images
+newSize: [512, 512] # 1024 / 2
+
+# transform.json
+# python scripts\normalize_with_aabb.py
+rotation: True
+rotation_initial: null
+
+#compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17)
+percentile_bbox:
+  lower: 1.0
+  upper: 99.9
+  padding: 0.2
+
+rot_order: [0, 1, 2] # apply order rotation
+angles: [0, 0, 0] # alpha, beta, gamma
+shift: [0, 0, 0]
+visualize: True
+
+# manuelly set aabb
+aabb_adjust:
+  aabb_min: [-0.1, -0.05, -0.05]
+  aabb_max: [0.1, 0.1, 0.05]
+
+# extraction
+checkpoint: "${checkpoint_dir}/nerf_final.pth"
+volume_output_path: "${output_dir}/volume.pth"
+
+aabb_slice: True
+sliced_vol_path: "${output_dir}/volume_sliced.pth"
+
+# colamp -> transforms.json
+colmap_dir: "./data/${scene_name}"
+
+# Training options
+batch_size: 4096
+num_epochs: 10
+lr: 0.001
+
+# Model options
+ngp: true
+nerf_type: large
+hidden_dim: 256
+pos_L: 10
+dir_L: 4
+
+# Rendering options
+N_samples: 64
+N_importance: 128
+white_bg: false
+chunk_size: 32768
+use_memmap: False

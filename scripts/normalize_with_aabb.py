@@ -506,31 +506,76 @@ def load_camera_intrinsics_txt(camera_path: Path, aabb_scale=1) -> dict:
         for line in f:
             if line[0] == "#":
                 continue
-            els = line.split(" ")
-            camera = {}
-            camera["fl_x"] = float(els[4])
-            camera["fl_y"] = float(els[4])
-            camera["k1"] = float(els[7])
-            camera["k2"] = 0
-            camera["k3"] = 0
-            camera["k4"] = 0
-            camera["p1"] = 0
-            camera["p2"] = 0
+            
+        els = line.split(" ")
+        camera = {}
+        camera["w"] = int(els[2])
+        camera["h"] = int(els[3])
+        camera["fl_x"] = float(els[4])
+        camera["fl_y"] = float(els[4])
+        camera["k1"] = 0
+        camera["k2"] = 0
+        camera["k3"] = 0
+        camera["k4"] = 0
+        camera["p1"] = 0
+        camera["p2"] = 0
+        camera["cx"] = camera["w"] / 2
+        camera["cy"] = camera["h"] / 2
+        camera["is_fisheye"] = False
+        if els[1] == "SIMPLE_PINHOLE":
             camera["cx"] = float(els[5])
             camera["cy"] = float(els[6])
-            camera["w"] = int(els[2])
-            camera["h"] = int(els[3])
-            camera["aabb_scale"] = aabb_scale
+        elif els[1] == "PINHOLE":
+            camera["fl_y"] = float(els[5])
+            camera["cx"] = float(els[6])
+            camera["cy"] = float(els[7])
+        elif els[1] == "SIMPLE_RADIAL":
+            camera["cx"] = float(els[5])
+            camera["cy"] = float(els[6])
+            camera["k1"] = float(els[7])
+        elif els[1] == "RADIAL":
+            camera["cx"] = float(els[5])
+            camera["cy"] = float(els[6])
+            camera["k1"] = float(els[7])
+            camera["k2"] = float(els[8])
+        elif els[1] == "OPENCV":
+            camera["fl_y"] = float(els[5])
+            camera["cx"] = float(els[6])
+            camera["cy"] = float(els[7])
+            camera["k1"] = float(els[8])
+            camera["k2"] = float(els[9])
+            camera["p1"] = float(els[10])
+            camera["p2"] = float(els[11])
+        elif els[1] == "SIMPLE_RADIAL_FISHEYE":
+            camera["is_fisheye"] = True
+            camera["cx"] = float(els[5])
+            camera["cy"] = float(els[6])
+            camera["k1"] = float(els[7])
+        elif els[1] == "RADIAL_FISHEYE":
+            camera["is_fisheye"] = True
+            camera["cx"] = float(els[5])
+            camera["cy"] = float(els[6])
+            camera["k1"] = float(els[7])
+            camera["k2"] = float(els[8])
+        elif els[1] == "OPENCV_FISHEYE":
+            camera["is_fisheye"] = True
+            camera["fl_y"] = float(els[5])
+            camera["cx"] = float(els[6])
+            camera["cy"] = float(els[7])
+            camera["k1"] = float(els[8])
+            camera["k2"] = float(els[9])
+            camera["k3"] = float(els[10])
+            camera["k4"] = float(els[11])
 
-            K = np.array(
-                [
-                    [camera["fl_x"], 0, camera["cx"]],
-                    [0, camera["fl_y"], camera["cy"]],
-                    [0, 0, 1],
-                ]
-            )
-            print(f"Loaded camera intrinsics from {camera_path}:\n{K}")
-            camera["K"] = K.tolist()
+        K = np.array(
+            [
+                [camera["fl_x"], 0, camera["cx"]],
+                [0, camera["fl_y"], camera["cy"]],
+                [0, 0, 1],
+            ]
+        )
+        print(f"Loaded camera intrinsics from {camera_path}:\n{K}")
+        camera["K"] = K.tolist()
 
     return camera
 
@@ -569,9 +614,7 @@ def main():
 
     # scene_name = "real_scene"
     scene_name = cfg.scene_name
-    WORKDIR = Path("data", scene_name, "colmap_text_original")
-    image_dir = WORKDIR.parent / "images"
-
+    WORKDIR = Path("data", scene_name, "colmap_text")
     points_path = WORKDIR / "points3D.txt"
     poses_path = WORKDIR / "images.txt"
     image_dir = WORKDIR.parent / "images"
@@ -646,7 +689,6 @@ def main():
         "normalization": {
             "original_center": center.tolist(),
             "scale": float(scale),
-            "coordinate_transform": "flip_yz_rotate_y15",
             "total_points": len(points),
             "filtered_points": len(cleaned_points),
         },

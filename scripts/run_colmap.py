@@ -24,8 +24,8 @@ def write_dir(path):
     return path
 
 
-def find_colmap_binary():
-    colmap_path = Path("tmp/colmap/COLMAP.bat").resolve()
+def find_colmap_binary(colmap_path: str = "tmp/colmap/COLMAP.bat"):
+    colmap_path = Path(colmap_path).resolve()
     if not colmap_path.exists():
         print(f"FATAL: COLMAP.bat not found at: {colmap_path}")
         sys.exit(1)
@@ -34,7 +34,7 @@ def find_colmap_binary():
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run COLMAP reconstruction pipeline and export to transforms.json")
-    parser.add_argument("--workspace", default="data/test_scene", type=Path, help="Working directory")
+    parser.add_argument("--workspace", default="data\\real_scene", type=Path, help="Working directory")
     parser.add_argument("--colmap_matcher", default="exhaustive", choices=["exhaustive", "sequential", "spatial", "transitive", "vocab_tree"])
     parser.add_argument("--colmap_db", default="colmap.db", help="COLMAP database filename")
     parser.add_argument("--colmap_camera_model", default="OPENCV", choices=[
@@ -45,6 +45,7 @@ def parse_args():
     parser.add_argument("--images", default="images", help="Path to input images")
     parser.add_argument("--aabb_scale", default=1, choices=["1", "2", "4", "8", "16", "32", "64", "128"])
     parser.add_argument("--out", default="transforms.json", help="Output file")
+    parser.add_argument("--colmap_bat", default="tmp/colmap/COLMAP.bat", help="Path to COLMAP binary")
     parser.add_argument("--vocab_path", default="", help="Optional vocab tree path")
     return parser.parse_args()
 
@@ -52,25 +53,17 @@ def parse_args():
 def run_colmap(args):
     workspace = args.workspace.resolve()
     db_path = workspace / args.colmap_db
+    images_dir = workspace / args.images
     sparse_dir = workspace / "sparse"
     text_dir = workspace / "colmap_text"
-    images_dir = workspace / args.images
 
     for dir_path in [sparse_dir, text_dir]:
         write_dir(dir_path)
 
-    colmap_binary = find_colmap_binary()
+    colmap_binary = find_colmap_binary(args.colmap_bat)
     colmap_dir = Path(colmap_binary).parent
 
     print(f"Using COLMAP binary: {colmap_binary}")
-
-    print("\n" + "="*40)
-    print(f"Running COLMAP with:")
-    print(f"DB path     : {db_path}")
-    print(f"Images path : {images_dir}")
-    print(f"Sparse path : {sparse_dir}")
-    print(f"Text path   : {text_dir}")
-    print("="*40 + "\n")
 
     # Feature extraction
     do_system(
@@ -122,7 +115,12 @@ def run_colmap(args):
     )
 
     print("\n" + "="*40)
-    print("COLMAP pipeline completed successfully.")
+    print(f"Running COLMAP with:")
+    print(f"DB path     : {db_path}")
+    print(f"Images path : {images_dir}")
+    print(f"Sparse path : {sparse_dir}")
+    print(f"Text path   : {text_dir}")
+    print("\nCOLMAP pipeline completed successfully.")
     print("="*40 + "\n")
 
 
