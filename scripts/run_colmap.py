@@ -44,7 +44,6 @@ def parse_args():
     parser.add_argument("--colmap_camera_params", default="", help="Camera intrinsics (optional)")
     parser.add_argument("--images", default="images", help="Path to input images")
     parser.add_argument("--aabb_scale", default=1, choices=["1", "2", "4", "8", "16", "32", "64", "128"])
-    parser.add_argument("--out", default="transforms.json", help="Output file")
     parser.add_argument("--colmap_bat", default="tmp/colmap/COLMAP.bat", help="Path to COLMAP binary")
     parser.add_argument("--vocab_path", default="", help="Optional vocab tree path")
     return parser.parse_args()
