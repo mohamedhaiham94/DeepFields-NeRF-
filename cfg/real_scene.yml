@@ -28,9 +28,9 @@ shift: [0, 0, 0]
 visualize: True
 
 # manuelly set aabb
-aabb_adjust:
-  aabb_min: [-0.1, -0.05, -0.05]
-  aabb_max: [0.1, 0.1, 0.05]
+aabb_adjust: # x, y, z
+  aabb_min: [0, 0, 0] 
+  aabb_max: [0, 0, 0]
 
 # extraction
 checkpoint: "${checkpoint_dir}/nerf_final.pth"
@@ -44,7 +44,7 @@ colmap_dir: "./data/${scene_name}"
 
 # Training options
 batch_size: 4096
-num_epochs: 10
+num_epochs: 2
 lr: 0.001
 
 # Model options

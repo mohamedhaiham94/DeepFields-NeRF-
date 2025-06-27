@@ -1,5 +1,5 @@
 # General settings
-scene_name: "blender_scene"
+scene_name: "blender_scene" # replace with your scene name
 output_dir: "./outputs/${scene_name}"
 checkpoint_dir: "${output_dir}/checkpoints"
 transforms_json: "transforms_${scene_name}.json"
@@ -8,35 +8,30 @@ rays_file: "${scene_name}_ray_data.npz"
 # resize images
 # python scripts\resize_images.py
 workspace: data/${scene_name}
-img_dir_original: ${workspace}/images_original
-new_images_dir: ${workspace}/images
+image_dir: ${workspace}/images
 newSize: [512, 512] # 1024 / 2
 
 # transform.json
 # python scripts\normalize_with_aabb.py
 rotation: True
-rotation_initial: #null
-  - [0.77892503, -0.25715966, 0.57196565]
-  - [-0.62710305, -0.32549969, 0.70766639]
-  - [0.00419140, -0.90990047, -0.41480546]
+rotation_initial: null
 
 #compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17)
 percentile_bbox:
   lower: 1.0
-  upper: 99.8
-  padding: 0.17
+  upper: 99.0
+  padding: 0.05
 
 rot_order: [0, 1, 2] # apply order rotation
 # axis order x, y, z - alpha, beta, gamma
-angles: [75, 0, 0] # alpha, beta, gamma
-shift: [-0.1, -0.2, -0.3]
+angles: [0, 0, 0] # alpha, beta, gamma
+shift: [0, 0, 0]
 visualize: True
 
 # aabb
 aabb_adjust:
-  aabb_min: [0, 0, 0.85]
-  aabb_max: [0, 0, 0.1]
-
+  aabb_min: [0, 0, 0]
+  aabb_max: [0, 0, 0]
 
 # extraction
 checkpoint: "${checkpoint_dir}/nerf_final.pth"
@@ -49,8 +44,8 @@ sliced_vol_path: "${output_dir}/volume_sliced.pth"
 colmap_dir: "./data/${scene_name}"
 
 # Training options
-batch_size: 4096 # 2048 # 1024
-num_epochs: 20 #10
+batch_size: 4096
+num_epochs: 10
 lr: 0.0005
 
 # Model options

@@ -8,8 +8,7 @@ rays_file: "${scene_name}_ray_data.npz"
 # resize images
 # python scripts\resize_images.py
 workspace: data/${scene_name}
-img_dir_original: ${workspace}/images_original
-new_images_dir: ${workspace}/images
+image_dir: ${workspace}/images
 newSize: [512, 512] # 1024 / 2
 
 # transform.json
