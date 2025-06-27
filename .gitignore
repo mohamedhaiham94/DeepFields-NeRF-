@@ -19,4 +19,5 @@ colmap
 colmap*
 
 data/real_scene
-data/test_scene
+
+data

@@ -96,7 +96,7 @@ The resized images will be saved in the ``data/<scene_name>/images`` folder spec
 1. Run COLMAP on the resized images and export the scene in text format inside the image directory, in a folder named ```colmap_text```.
 
 ```bash
-python .\scripts\run_colmap.py --workspace .\data\<scene_name>\ --images images_original\
+python .\scripts\run_colmap.py --workspace .\data\<scene_name>\
 ```
 
 
