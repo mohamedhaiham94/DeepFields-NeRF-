@@ -15,6 +15,10 @@ newSize: [512, 512] # 1024 / 2
 # python scripts\normalize_with_aabb.py
 rotation: True
 rotation_initial: null
+rot_order: [0, 1, 2] # apply order rotation
+angles: [0, 0, 0] # alpha, beta, gamma
+shift: [0, 0, 0]
+visualize: True
 
 #compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17)
 percentile_bbox:
@@ -22,10 +26,6 @@ percentile_bbox:
   upper: 99.9
   padding: 0.2
 
-rot_order: [0, 1, 2] # apply order rotation
-angles: [0, 0, 0] # alpha, beta, gamma
-shift: [0, 0, 0]
-visualize: True
 
 # manuelly set aabb
 aabb_adjust: # x, y, z
