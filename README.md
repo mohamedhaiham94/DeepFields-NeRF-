@@ -103,6 +103,8 @@ python .\scripts\run_colmap.py --workspace .\data\<scene_name>\
 3. Create the transform.json file
 ```bash
 python scripts\normalize_with_aabb.py --cfg_path cfg\<scene_name>.yml
+
+python scripts\normalize_with_aabb_improved.py --cfg_path cfg\<scene_name>.yml
 ```
 **Rotation Matrix Initialization**
 Each scene allows you to define a custom rotation matrix.

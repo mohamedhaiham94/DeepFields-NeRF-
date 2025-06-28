@@ -34,7 +34,7 @@ def find_colmap_binary(colmap_path: str = "tmp/colmap/COLMAP.bat"):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run COLMAP reconstruction pipeline and export to transforms.json")
-    parser.add_argument("--workspace", default="data\\real_scene", type=Path, help="Working directory")
+    parser.add_argument("--workspace", default="data\\blender_scene", type=Path, help="Working directory")
     parser.add_argument("--colmap_matcher", default="exhaustive", choices=["exhaustive", "sequential", "spatial", "transitive", "vocab_tree"])
     parser.add_argument("--colmap_db", default="colmap.db", help="COLMAP database filename")
     parser.add_argument("--colmap_camera_model", default="OPENCV", choices=[
