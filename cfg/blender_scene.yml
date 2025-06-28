@@ -15,9 +15,9 @@ newSize: [512, 512] # 1024 / 2
 # python scripts\normalize_with_aabb.py
 rotation: True
 rotation_initial: null
-rot_order: [0, 1, 2] # apply order rotation
+rot_order: [1, 0, 2] # apply order rotation
 # axis order x, y, z - alpha, beta, gamma
-angles: [0, 0, 0] # alpha, beta, gamma
+angles: [-3, 12, 0] # alpha, beta, gamma
 shift: [0, 0, 0]
 visualize: True
 
@@ -33,6 +33,9 @@ aabb_adjust:
   aabb_min: [0, 0, 0]
   aabb_max: [0, 0, 0]
 
+# "adaptive", "percentile", "statistical", "hybrid"
+normalization_method: "hybrid" 
+
 # extraction
 checkpoint: "${checkpoint_dir}/nerf_final.pth"
 volume_output_path: "${output_dir}/volume.pth"
@@ -44,8 +47,8 @@ sliced_vol_path: "${output_dir}/volume_sliced.pth"
 colmap_dir: "./data/${scene_name}"
 
 # Training options
-batch_size: 4096
-num_epochs: 10
+batch_size: 8192 #4096
+num_epochs: 5
 lr: 0.0005
 
 # Model options

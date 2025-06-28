@@ -143,7 +143,6 @@ def draw_aabb(aabb_min, aabb_max):
 
 def load_3d_points_txt(path) -> dict:
     """Load 3D points from a text file."""
-    # points = {"3d_pts": [], "rgbs": []}
     points = []
     rbgs = []
 
@@ -459,6 +458,7 @@ def display_points(
 
 
 def filter_statistical_outliers(points, nb_neighbors=20, std_ratio=2.0):
+    """Filter statistical outliers using Open3D."""
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
     pcd, ind = pcd.remove_statistical_outlier(
@@ -468,7 +468,14 @@ def filter_statistical_outliers(points, nb_neighbors=20, std_ratio=2.0):
     return filtered_points, ind
 
 
-##################################################################################
+def filter_radius_outliers(points, nb_points=16, radius=0.05):
+    """Filter outliers based on radius search."""
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points)
+    pcd, ind = pcd.remove_radius_outlier(nb_points=nb_points, radius=radius)
+    filtered_points = np.asarray(pcd.points)
+    return filtered_points, ind
+
 
 def adaptive_percentile_bounds(points, target_retention=0.95):
     """
@@ -652,30 +659,30 @@ def robust_bbox_computation(points, method="adaptive", **kwargs):
     return center, scale, info
 
 
-
-
-##################################################################################
-
 def compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17):
     """
-    points: Nx3 array of 3D points.
-
-    Compute robust center and scale using percentiles, with optional padding.
-    The padding value shrinks the scale to avoid touching the [-1, 1]^3 boundaries exactly.
-
-    Parameters:
-        padding: 0.0 = no padding (fills full cube)
-                 0.05 = 5% margin (scene fits in [-0.95, 0.95])
+    IMPROVED: Compute robust center and scale using percentiles, with validation.
+    
+    This is a backward-compatible wrapper around the new robust_bbox_computation.
     """
-
-    assert 0.0 <= padding < 1.0, "Padding must be in [0, 1)"
-
-    mins = np.percentile(points, lower, axis=0)
-    maxs = np.percentile(points, upper, axis=0)
-    center = (mins + maxs) / 2.0
-    scene_size = np.max(maxs - mins)
-    scale = (2.0 * (1.0 - padding)) / scene_size
-    return center, float(scale)
+    try:
+        center, scale, info = robust_bbox_computation(
+            points, 
+            method="percentile",
+            lower=lower,
+            upper=upper,
+            padding=padding
+        )
+        return center, float(scale)
+    except Exception as e:
+        print(f"Warning: Robust computation failed ({e}), falling back to simple method")
+        # Fallback to simple computation
+        mins = np.percentile(points, lower, axis=0)
+        maxs = np.percentile(points, upper, axis=0)
+        center = (mins + maxs) / 2.0
+        scene_size = np.max(maxs - mins)
+        scale = (2.0 * (1.0 - padding)) / scene_size
+        return center, float(scale)
 
 
 def apply_world_rotation(T, R_new):
@@ -793,14 +800,13 @@ def write_transform_to_json(transform, output_path):
 
 def main():
     """
-    Main function to process COLMAP data and generate transforms.json with AABB information.
+    IMPROVED: Main function with robust normalization computation and better error handling.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--cfg_path", type=str, default=None)
     args = parser.parse_args()
     cfg = OmegaConf.load(args.cfg_path)
 
-    # scene_name = "real_scene"
     scene_name = cfg.scene_name
     WORKDIR = Path("data", scene_name, "colmap_text")
     points_path = WORKDIR / "points3D.txt"
@@ -812,25 +818,63 @@ def main():
     points, rgbs = load_3d_points_txt(points_path)
     print(f"Loaded {len(points)} 3D points from {points_path}")
 
-    # Filter outliers
-    print("Filtering statistical outliers...")
-    cleaned_points, ind = filter_statistical_outliers(points)
-    print(
-        f"Filtered to {len(cleaned_points)} points (removed {len(points) - len(cleaned_points)} outliers)"
-    )
+    if len(points) == 0:
+        raise ValueError("No 3D points loaded. Check the points3D.txt file.")
 
-    # Compute normalization parameters
-    print("Computing normalization parameters...")
-    center, scale = compute_percentile_bbox(
-        cleaned_points,
-        lower=cfg.percentile_bbox["lower"],
-        upper=cfg.percentile_bbox["upper"],
-        padding=cfg.percentile_bbox["padding"],
-    )
+    # IMPROVED: Use robust bbox computation with multiple strategies
+    normalization_method = cfg.get("normalization_method", "hybrid")
+    print(f"Computing normalization parameters using '{normalization_method}' method...")
+    
+    try:
+        if normalization_method == "original":
+            # Use original method for backward compatibility
+            cleaned_points, ind = filter_statistical_outliers(points)
+            center, scale = compute_percentile_bbox(
+                cleaned_points,
+                lower=cfg.percentile_bbox["lower"],
+                upper=cfg.percentile_bbox["upper"],
+                padding=cfg.percentile_bbox["padding"],
+            )
+            normalization_info = {
+                "method": "original",
+                "filtered_points": len(cleaned_points),
+                "removed_points": len(points) - len(cleaned_points)
+            }
+        else:
+            # Use improved robust computation
+            center, scale, normalization_info = robust_bbox_computation(
+                points,
+                method=normalization_method,
+                target_retention=cfg.get("target_retention", 0.95),
+                padding=cfg.percentile_bbox.get("padding", 0.1),
+                nb_neighbors=cfg.get("outlier_nb_neighbors", 20),
+                std_ratio=cfg.get("outlier_std_ratio", 2.0)
+            )
+            
+            if not normalization_info["normalization_success"]:
+                print("Warning: Normalization validation failed, trying fallback method...")
+                center, scale, normalization_info = robust_bbox_computation(
+                    points,
+                    method="adaptive",
+                    target_retention=0.9,
+                    padding=0.15
+                )
+    
+    except Exception as e:
+        print(f"Error in robust normalization: {e}")
+        print("Falling back to simple percentile method...")
+        center, scale = compute_percentile_bbox(
+            points,
+            lower=1.0,
+            upper=99.0,
+            padding=0.15
+        )
+        normalization_info = {"method": "fallback", "error": str(e)}
+
     print(f"Normalization center: [{center[0]:.3f}, {center[1]:.3f}, {center[2]:.3f}]")
     print(f"Normalization scale: {scale:.6f}")
 
-    # Apply normalization to all points (including outliers for AABB computation)
+    # Apply normalization to all points
     points_normalized = (points - center) * scale
 
     # Load camera data
@@ -878,7 +922,7 @@ def main():
             "original_center": center.tolist(),
             "scale": float(scale),
             "total_points": len(points),
-            "filtered_points": len(cleaned_points),
+            "method_info": normalization_info,
         },
     }
 
@@ -888,18 +932,18 @@ def main():
 
     print(f"\nSummary:")
     print(f"  Total 3D points: {len(points)}")
-    print(f"  Filtered points: {len(cleaned_points)}")
+    print(f"  Normalization method: {normalization_info.get('method', 'unknown')}")
     print(f"  Camera poses: {len(frames_transformed)}")
     print(f"  Scene AABB volume efficiency: {aabb_info['volume_efficiency']:.1%}")
     print(f"  Near/far bounds: {near:.6f} / {far:.6f}")
     print(f"  Transform saved to: {output_path}")
 
     # Visualize results
-    print("\nLaunching visualization...")
-
-    if cfg.visualize:
+    if cfg.get("visualize", False):
+        print("\nLaunching visualization...")
         display_points(points_transformed, rgbs, frames_transformed, aabb_info)
 
 
 if __name__ == "__main__":
     main()
+

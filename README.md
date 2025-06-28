@@ -157,7 +157,7 @@ After training, the NeRF model will be saved to:
 
 6. Extract volume with the pretrained network
 ```bash
-python python scripts\extract_vol.py --cfg_path cfg\<scene_name>.yml
+python scripts\extract_vol.py --cfg_path cfg\<scene_name>.yml
 ```
 The volume wil be saved to: ```outputs\<scene_name>\volume.pth```
 
