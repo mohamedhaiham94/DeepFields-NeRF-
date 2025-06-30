@@ -871,6 +871,8 @@ def main():
         )
         normalization_info = {"method": "fallback", "error": str(e)}
 
+    scale *= cfg.scale
+    
     print(f"Normalization center: [{center[0]:.3f}, {center[1]:.3f}, {center[2]:.3f}]")
     print(f"Normalization scale: {scale:.6f}")
 

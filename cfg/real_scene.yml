@@ -26,6 +26,7 @@ percentile_bbox:
   upper: 99.9
   padding: 0.2
 
+scale: 1
 
 # manuelly set aabb
 aabb_adjust: # x, y, z

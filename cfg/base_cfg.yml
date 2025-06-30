@@ -26,6 +26,8 @@ percentile_bbox:
   upper: 99.0
   padding: 0.05
 
+scale: 1
+
 # aabb
 aabb_adjust:
   aabb_min: [0, 0, 0]
