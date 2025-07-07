@@ -71,7 +71,7 @@ def raw2outputs(rgb, sigma, z_vals, white_bg=False):
     """
     # Compute the alpha values
     dists = z_vals[..., 1:] - z_vals[..., :-1]
-    dist_last = torch.full_like(dists[..., :1], 1e10)
+    dist_last = torch.full_like(dists[..., :1], 1e6)
     dists = torch.cat([dists, dist_last], -1)
 
     # Calculate alpha (opacity)
@@ -126,6 +126,7 @@ def forward_pass(
     sampler,
     criterion,
     device,
+    white_bg
 ):
     # Coarse sampling
     pts, view_pts, z_vals = sampler(rays_o, rays_d, t_near, t_far)
@@ -139,7 +140,7 @@ def forward_pass(
     rgb_coarse = rgb_coarse.reshape(-1, cfg.N_samples, 3)
     sigma_coarse = sigma_coarse.reshape(-1, cfg.N_samples, 1)
     
-    rgb_map_coarse, weights = raw2outputs(rgb_coarse, sigma_coarse, z_vals)
+    rgb_map_coarse, weights = raw2outputs(rgb_coarse, sigma_coarse, z_vals, white_bg)
 
     # Fine sampling
     z_vals_mid = 0.5 * (z_vals[..., :-1] + z_vals[..., 1:])
@@ -164,7 +165,7 @@ def forward_pass(
     rgb_fine = rgb_fine.reshape(-1, cfg.N_importance + cfg.N_samples, 3)
     sigma_fine = sigma_fine.reshape(-1, cfg.N_importance + cfg.N_samples, 1)
     
-    rgb_map_fine, _ = raw2outputs(rgb_fine, sigma_fine, z_vals_combined)
+    rgb_map_fine, _ = raw2outputs(rgb_fine, sigma_fine, z_vals_combined, white_bg)
 
     # Loss computation
     loss_coarse = criterion(rgb_map_coarse, image_rgb)
@@ -259,9 +260,11 @@ def train(cfg: OmegaConf):
     model_fine.train()
     start_time = time.time()
     steps_per_epoch = len(dataloader)
-
+    
+    print(f"White background: {cfg.white_bg}")
     print(f"Starting optimized training for {cfg.num_epochs} epochs")
     print(f"Total steps: {total_steps}")
+    
     for epoch in range(1, cfg.num_epochs + 1):
         for idx, ray_batch in enumerate(
             tqdm(dataloader, desc="Training", total=len(dataloader))
@@ -289,6 +292,7 @@ def train(cfg: OmegaConf):
                     sampler,
                     criterion,
                     device,
+                    cfg.white_bg
                 )
 
             # Backward pass with gradient scaling
