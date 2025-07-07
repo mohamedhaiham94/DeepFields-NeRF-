@@ -308,8 +308,8 @@ def train(cfg: OmegaConf):
                 psnr = -10.0 * torch.log10(loss_fine)
 
             scaler.step(optimizer)
-            scaler.update()
             scheduler.step()
+            scaler.update()
 
             if idx % 100 == 0:
                 elapsed_time = time.time() - start_time
