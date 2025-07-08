@@ -19,7 +19,7 @@ rot_order: [0, 1, 2] # apply order rotation
 # axis order x, y, z - alpha, beta, gamma
 angles: [0, 0, 0] # alpha, beta, gamma
 shift: [0, 0, 0]
-visualize: True
+visualize: False
 #compute_percentile_bbox(points, lower=1.0, upper=99.8, padding=0.17)
 percentile_bbox:
   lower: 1.0
