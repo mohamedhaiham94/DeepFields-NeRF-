@@ -1,17 +1,13 @@
 .git/
 .idea/
 *.pyc
-
 __pycache__
-
-data/
-outputs/
-
 .venv/
-colmap
 
 *.json
 .vscode/
 *.npz
-colmap*
+tmp
 
+data/
+outputs/
