@@ -4,10 +4,7 @@
 
 __pycache__
 
-data/blender_scene/images_original/
-data/blender_scene/images/
-data/blender_scene/colmap_text_original/
-
+data/
 outputs/
 
 .venv/
@@ -18,6 +15,3 @@ colmap
 *.npz
 colmap*
 
-data/real_scene
-
-data
