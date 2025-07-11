@@ -280,7 +280,8 @@ def main():
         print("\n" + "=" * 50)
         print("STEP 2: Generating 3D sampling grid")
         print("=" * 50)
-        grid_points = generate_3d_grid(tuple(args.bounds), args.resolution)
+        # grid_points = generate_3d_grid(tuple(args.bounds), args.resolution)
+        grid_points = generate_3d_grid(tuple(args.bounds), cfg.volume_resolution)
 
         # Step 3: Query densities and RGB (if requested)
         print("\n" + "=" * 50)
@@ -342,7 +343,8 @@ def main():
             binary_occupancy,
             rgb_values,
             cfg.volume_output_path,
-            args.resolution,
+            # args.resolution,
+            cfg.volume_resolution,
             tuple(args.bounds),
             threshold,
             metadata,

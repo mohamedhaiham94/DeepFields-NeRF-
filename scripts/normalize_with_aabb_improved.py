@@ -283,7 +283,7 @@ def flip_colmap_to_nerf_correct(
 
 
 def compute_scene_aabb(
-    points, aabb_adjust, percentile_bounds=(1.0, 99.0), padding=0.02
+    points, aabb_adjust, percentile_bounds=(1.0, 99.0), padding=0.02, remove_upper = True
 ):
     """
     Compute the Axis-Aligned Bounding Box (AABB) of the scene points.
@@ -335,8 +335,12 @@ def compute_scene_aabb(
     z_offset = 0.1
     z_axis = aabb_max[2] + z_offset
     z_axis = 1 if z_axis > 1 else z_axis
-    aabb_max = np.array([1, 1, z_axis]) + np.array(aabb_adjust["aabb_max"])
-
+    
+    if remove_upper:
+        aabb_max = np.array([1, 1, z_axis]) + np.array(aabb_adjust["aabb_max"])
+    else:
+        aabb_max = np.array([1,1,1])
+        
     aabb_info = {
         "aabb_min": aabb_min.tolist(),
         "aabb_max": aabb_max.tolist(),
