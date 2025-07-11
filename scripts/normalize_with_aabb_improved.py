@@ -252,7 +252,7 @@ def flip_colmap_to_nerf_correct(
         Rot = np.eye(3)
 
         if rotation_initial is not None:
-            Rot =  np.array(rotation_initial)
+            Rot = np.array(rotation_initial)
             print(f"Rotation matrix after applying initial rotation:")
             print(Rot)
 
