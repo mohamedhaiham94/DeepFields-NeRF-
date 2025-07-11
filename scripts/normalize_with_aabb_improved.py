@@ -324,8 +324,18 @@ def compute_scene_aabb(
     cube_volume = 8.0  # Volume of [-1,1]³ cube
     volume_efficiency = volume / cube_volume
 
-    aabb_min = aabb_min + np.array(aabb_adjust["aabb_min"])
-    aabb_max = aabb_max + np.array(aabb_adjust["aabb_max"])
+    # Compute efficiency metrics
+    cube_volume = 8.0  # Volume of [-1,1]³ cube
+    volume_efficiency = volume / cube_volume
+
+    # aabb_min = aabb_min + np.array(aabb_adjust["aabb_min"])
+    aabb_min = np.array([-1, -1, -1]) + np.array(aabb_adjust["aabb_min"])
+
+    # aabb_max = aabb_max + np.array(aabb_adjust["aabb_max"])
+    z_offset = 0.1
+    z_axis = aabb_max[2] + z_offset
+    z_axis = 1 if z_axis > 1 else z_axis
+    aabb_max = np.array([1, 1, z_axis]) + np.array(aabb_adjust["aabb_max"])
 
     aabb_info = {
         "aabb_min": aabb_min.tolist(),
