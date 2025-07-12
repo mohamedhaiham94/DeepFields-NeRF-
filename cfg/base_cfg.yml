@@ -7,6 +7,7 @@ rays_file: "${scene_name}_ray_data.npz"
 
 volume_resolution: 512
 remove_upper_aabb: True
+visualize: False
 
 # resize images
 # python scripts\resize_images.py
