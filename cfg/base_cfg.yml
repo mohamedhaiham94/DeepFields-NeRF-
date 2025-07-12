@@ -50,7 +50,7 @@ colmap_dir: "./data/${scene_name}"
 
 # Training options
 batch_size: 4096
-num_epochs: 10
+num_epochs: 1
 lr: 0.0005
 
 # Model options
