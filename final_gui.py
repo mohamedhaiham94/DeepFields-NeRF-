@@ -342,8 +342,10 @@ class VispyViewer(QMainWindow):
                 and "aabb_min" in data["scene_aabb"]
                 and "aabb_max" in data["scene_aabb"]
             ):
-                self.aabb_z_min = data["scene_aabb"]["aabb_min"][2]
-                self.aabb_z_max = data["scene_aabb"]["aabb_max"][2]
+                # self.aabb_z_min = data["scene_aabb"]["aabb_min"][2]
+                self.aabb_z_min = data["scene_aabb"]["aabb_remove_below"]
+                # self.aabb_z_max = data["scene_aabb"]["aabb_max"][2]
+                self.aabb_z_max = data["scene_aabb"]["aabb_remove_above"]
 
                 # UPDATE: Set the labels with loaded data
                 self.aabb_file_label.setText(Path(file_path).name)
@@ -1051,7 +1053,7 @@ class VispyViewer(QMainWindow):
             "scene_name": scene,
             "output_dir": f"./outputs/{scene}",
             "checkpoint_dir": f"${{output_dir}}/checkpoints",
-            "transforms_json": f"transforms.json",
+            "transforms_json": f"transforms_{scene}.json",
             "rays_file": f"{scene}_ray_data.npz",
             "volume_resolution": self.cfg_volume_resolution.value(),
             "remove_upper_aabb": self.cfg_remove_upper_aabb.isChecked(),
