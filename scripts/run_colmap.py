@@ -51,6 +51,7 @@ def parse_args():
 
 def run_colmap(args):
     workspace = args.workspace.resolve()
+    print("workspace:", workspace)
     db_path = workspace / args.colmap_db
     images_dir = workspace / args.images
     sparse_dir = workspace / "sparse"

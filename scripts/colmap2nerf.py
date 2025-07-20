@@ -18,7 +18,7 @@ class ScenePaths:
     """Manages all paths for a given scene."""
 
     scene_name: str
-    base_dir: Path = Path("data")
+    base_dir: Path = Path("tmp")
     workdir: Path = field(init=False)
     points3d_txt: Path = field(init=False)
     images_txt: Path = field(init=False)
@@ -430,7 +430,7 @@ def flip_colmap2nerf(
 
 
 def compute_scene_aabb(
-    points, aabb_adjust, percentile_bounds=(1.0, 99.0), padding=0.02
+    points, aabb_adjust, percentile_bounds=(1.0, 99.0), padding=0.02, cfg=None
 ):
     """
     Compute the Axis-Aligned Bounding Box (AABB) of the scene points.
@@ -472,15 +472,31 @@ def compute_scene_aabb(
     volume_efficiency = volume / cube_volume
 
     # aabb_min = aabb_min + np.array(aabb_adjust["aabb_min"])
-    aabb_min = np.array([-1, -1, -1]) + np.array(aabb_adjust["aabb_min"])
-
-    # aabb_max = aabb_max + np.array(aabb_adjust["aabb_max"])
-    z_offset = 0.1
-    z_axis = aabb_max[2] + z_offset
-    z_axis = 1 if z_axis > 1 else z_axis
-    aabb_max = np.array([1, 1, z_axis]) + np.array(aabb_adjust["aabb_max"])
+    # aabb_min = np.array([-1, -1, -1]) + np.array(aabb_adjust["aabb_min"])
+    
+    remove_below = aabb_min[2]
+    remove_above = aabb_max[2]
+    
+    if cfg.get("remove_below_aabb", True):
+        aabb_min = np.array([-1, -1, aabb_min[2]]) + np.array(aabb_adjust["aabb_min"])
+    else:
+        aabb_min = np.array([-1, -1, -1]) + np.array(aabb_adjust["aabb_min"])
+    
+    if cfg.get("remove_upper_aabb", True):
+        z_offset = 0.1
+        z_axis = aabb_max[2] + z_offset
+        z_axis = 1 if z_axis > 1 else z_axis
+        aabb_max = np.array([1, 1, z_axis]) + np.array(aabb_adjust["aabb_max"])
+    else:    
+        aabb_max = np.array([1, 1, 1]) + np.array(aabb_adjust["aabb_max"])
+    # z_offset = 0.1
+    # z_axis = aabb_max[2] + z_offset
+    # z_axis = 1 if z_axis > 1 else z_axis
+    # aabb_max = np.array([1, 1, z_axis]) + np.array(aabb_adjust["aabb_max"])
 
     aabb_info = {
+        "aabb_remove_below": remove_below,
+        "aabb_remove_above": remove_above,
         "aabb_min": aabb_min.tolist(),
         "aabb_max": aabb_max.tolist(),
         "aabb_center": center.tolist(),
@@ -751,6 +767,7 @@ def main():
         aabb_adjust=cfg.aabb_adjust,
         percentile_bounds=(1.0, 99.0),
         padding=0.02,
+        cfg=cfg
     )
     
 
