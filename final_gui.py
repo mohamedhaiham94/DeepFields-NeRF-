@@ -1004,8 +1004,8 @@ class VispyViewer(QMainWindow):
         button_layout.addWidget(load_button)
         button_layout.addWidget(save_button)
         
-        preview_layout.addWidget(self.config_preview)
         preview_layout.addLayout(button_layout)
+        preview_layout.addWidget(self.config_preview)
         preview_group.setLayout(preview_layout)
         main_layout.addWidget(preview_group)
 
