@@ -822,19 +822,21 @@ class VispyViewer(QMainWindow):
         # --- Image Resizing ---
         resize_group = QGroupBox("Image Resizing")
         resize_layout = QFormLayout()
-        # self.cfg_resize_cb = QCheckBox("Resize", checked=False)
+        
+        # Add checkbox for enabling/disabling image resizing
+        self.cfg_resize_enabled = QCheckBox("Enable Image Resizing", checked=True)
+        resize_layout.addRow(self.cfg_resize_enabled)
+        
         self.cfg_resize_w = QSpinBox(minimum=128, maximum=4096, value=512)
         self.cfg_resize_h = QSpinBox(minimum=128, maximum=4096, value=512)
         
         resize_hbox = QHBoxLayout()
-        # resize_hbox.addWidget(self.cfg_resize_cb)
         resize_hbox.addWidget(QLabel("W"))
         resize_hbox.addWidget(self.cfg_resize_w)
         resize_hbox.addWidget(QLabel("H"))
         resize_hbox.addWidget(self.cfg_resize_h)
         resize_hbox.setAlignment(Qt.AlignLeft)
-        # resize_layout.addRow("New Size (W x H):", resize_hbox)
-        resize_layout.addRow(resize_hbox)
+        resize_layout.addRow("New Size (W x H):", resize_hbox)
         resize_group.setLayout(resize_layout)
         form_layout.addWidget(resize_group)
 
@@ -978,13 +980,26 @@ class VispyViewer(QMainWindow):
         self.config_preview.setFontFamily("Courier")
         self.config_preview.setMinimumHeight(200)
 
+        # Button layout for Load and Save
+        button_layout = QHBoxLayout()
+        
+        load_button = QPushButton("Load Config from YAML")
+        load_button.clicked.connect(self.load_config_yaml)
+        load_button.setStyleSheet(
+            "QPushButton { background-color: #2196F3; color: white; font-weight: bold; }"
+        )
+        
         save_button = QPushButton("Save Config to YAML")
         save_button.clicked.connect(self.save_config_yaml)
         save_button.setStyleSheet(
             "QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }"
         )
+        
+        button_layout.addWidget(load_button)
+        button_layout.addWidget(save_button)
+        
         preview_layout.addWidget(self.config_preview)
-        preview_layout.addWidget(save_button)
+        preview_layout.addLayout(button_layout)
         preview_group.setLayout(preview_layout)
         main_layout.addWidget(preview_group)
 
@@ -993,6 +1008,7 @@ class VispyViewer(QMainWindow):
         self.cfg_volume_resolution.valueChanged.connect(self.update_config_preview)
         self.cfg_remove_upper_aabb.stateChanged.connect(self.update_config_preview)
         self.cfg_remove_below_aabb.stateChanged.connect(self.update_config_preview)
+        self.cfg_resize_enabled.stateChanged.connect(self.update_config_preview)
         self.cfg_resize_w.valueChanged.connect(self.update_config_preview)
         self.cfg_resize_h.valueChanged.connect(self.update_config_preview)
         # self.cfg_rotation.stateChanged.connect(self.update_config_preview)
@@ -1010,6 +1026,14 @@ class VispyViewer(QMainWindow):
         self.cfg_hidden_dim.valueChanged.connect(self.update_config_preview)
         self.cfg_pos_L.valueChanged.connect(self.update_config_preview)
         self.cfg_dir_L.valueChanged.connect(self.update_config_preview)
+
+        # Connect outlier and bbox settings
+        self.cfg_target_retention.valueChanged.connect(self.update_config_preview)
+        self.cfg_outlier_nb_neighbors.valueChanged.connect(self.update_config_preview)
+        self.cfg_outlier_std_ratio.valueChanged.connect(self.update_config_preview)
+        self.cfg_percentile_lower.valueChanged.connect(self.update_config_preview)
+        self.cfg_percentile_upper.valueChanged.connect(self.update_config_preview)
+        self.cfg_percentile_padding.valueChanged.connect(self.update_config_preview)
 
         # Initial preview update
         self.update_config_preview()
@@ -1030,6 +1054,7 @@ class VispyViewer(QMainWindow):
             "visualize": False,
             "workspace": f"data/{scene}",
             "image_dir": "${workspace}/images",
+            "resize_images": self.cfg_resize_enabled.isChecked(),
             "newSize": [self.cfg_resize_w.value(), self.cfg_resize_h.value()],
             #'rotation': self.cfg_rotation.isChecked(),
             #'rotation_initial': None,
@@ -1080,6 +1105,131 @@ class VispyViewer(QMainWindow):
         except Exception as e:
             self.config_preview.setText(f"Error generating YAML: {e}")
 
+    def load_config_yaml(self):
+        """Load configuration from a YAML file and update GUI values"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Load Config File", "cfg/", "YAML Files (*.yml *.yaml)"
+        )
+        
+        if not file_path:
+            return
+            
+        try:
+            with open(file_path, "r") as f:
+                config = yaml.safe_load(f)
+            
+            # Block signals to prevent triggering update_config_preview multiple times
+            self.block_all_signals(True)
+            
+            # Update GUI values from loaded config
+            if "scene_name" in config:
+                self.cfg_scene_name.setText(str(config["scene_name"]))
+            
+            if "volume_resolution" in config:
+                self.cfg_volume_resolution.setValue(config["volume_resolution"])
+            
+            if "remove_upper_aabb" in config:
+                self.cfg_remove_upper_aabb.setChecked(config["remove_upper_aabb"])
+            
+            if "remove_below_abb" in config:
+                self.cfg_remove_below_aabb.setChecked(config["remove_below_abb"])
+            
+            # Image resizing settings
+            if "resize_images" in config:
+                self.cfg_resize_enabled.setChecked(config["resize_images"])
+            
+            if "newSize" in config and isinstance(config["newSize"], list) and len(config["newSize"]) >= 2:
+                self.cfg_resize_w.setValue(config["newSize"][0])
+                self.cfg_resize_h.setValue(config["newSize"][1])
+            
+            # Scene transformation
+            if "shift" in config and isinstance(config["shift"], list) and len(config["shift"]) >= 3:
+                for i, spinbox in enumerate(self.cfg_shift):
+                    if i < len(config["shift"]):
+                        spinbox.setValue(config["shift"][i])
+            
+            if "scale" in config:
+                self.cfg_scale.setValue(config["scale"])
+            
+            # Outlier and bounding box settings
+            if "target_retention" in config:
+                self.cfg_target_retention.setValue(config["target_retention"])
+            
+            if "outlier_nb_neighbors" in config:
+                self.cfg_outlier_nb_neighbors.setValue(config["outlier_nb_neighbors"])
+            
+            if "outlier_std_ratio" in config:
+                self.cfg_outlier_std_ratio.setValue(config["outlier_std_ratio"])
+            
+            if "percentile_bbox" in config and isinstance(config["percentile_bbox"], dict):
+                bbox = config["percentile_bbox"]
+                if "lower" in bbox:
+                    self.cfg_percentile_lower.setValue(bbox["lower"])
+                if "upper" in bbox:
+                    self.cfg_percentile_upper.setValue(bbox["upper"])
+                if "padding" in bbox:
+                    self.cfg_percentile_padding.setValue(bbox["padding"])
+            
+            # Training options
+            if "batch_size" in config:
+                self.cfg_batch_size.setValue(config["batch_size"])
+            
+            if "num_epochs" in config:
+                self.cfg_num_epochs.setValue(config["num_epochs"])
+            
+            if "lr" in config:
+                self.cfg_lr.setValue(config["lr"])
+            
+            # Model options
+            if "ngp" in config:
+                self.cfg_ngp.setChecked(config["ngp"])
+            
+            if "N_samples" in config:
+                self.N_samples.setValue(config["N_samples"])
+            
+            if "N_importance" in config:
+                self.N_importance.setValue(config["N_importance"])
+            
+            if "hidden_dim" in config:
+                self.cfg_hidden_dim.setValue(config["hidden_dim"])
+            
+            if "pos_L" in config:
+                self.cfg_pos_L.setValue(config["pos_L"])
+            
+            if "dir_L" in config:
+                self.cfg_dir_L.setValue(config["dir_L"])
+            
+            # Re-enable signals and update preview
+            self.block_all_signals(False)
+            self.update_config_preview()
+            
+            QMessageBox.information(
+                self, "Success", f"Configuration loaded from:\n{file_path}"
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to load configuration file:\n{e}"
+            )
+
+    def block_all_signals(self, block):
+        """Helper method to block/unblock signals from all config widgets"""
+        widgets = [
+            self.cfg_scene_name, self.cfg_volume_resolution, self.cfg_remove_upper_aabb,
+            self.cfg_remove_below_aabb, self.cfg_resize_enabled, self.cfg_resize_w, self.cfg_resize_h,
+            self.cfg_scale, self.cfg_target_retention, self.cfg_outlier_nb_neighbors,
+            self.cfg_outlier_std_ratio, self.cfg_percentile_lower, self.cfg_percentile_upper,
+            self.cfg_percentile_padding, self.cfg_batch_size, self.cfg_num_epochs, self.cfg_lr,
+            self.cfg_ngp, self.N_samples, self.N_importance, self.cfg_hidden_dim,
+            self.cfg_pos_L, self.cfg_dir_L
+        ]
+        
+        # Add shift spinboxes
+        widgets.extend(self.cfg_shift)
+        
+        for widget in widgets:
+            widget.blockSignals(block)
+
     def save_config_yaml(self):
         config_dict = self.generate_config_dict()
         scene_name = config_dict.get("scene_name", "config")
@@ -1120,3 +1270,4 @@ if __name__ == "__main__":
     viewer = VispyViewer()
     viewer.show()
     sys.exit(app.exec())
+
