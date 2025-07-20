@@ -468,7 +468,7 @@ class VispyViewer(QMainWindow):
                 "description": "Resize input images",
             },
             "run_colmap.py": {
-                "command": "python scripts/run_colmap.py --workspace ./data/{scene}/",
+                "command": "python scripts/run_colmap.py --workspace ./tmp/{scene}/",
                 "description": "Run COLMAP reconstruction",
             },
             "colmap2nerf.py": {
@@ -480,7 +480,8 @@ class VispyViewer(QMainWindow):
                 "description": "Precompute rays and save as NPZ",
             },
             "train.py": {
-                "command": "python scripts/train.py --cfg_path cfg/{scene}.yml",
+                # "command": "python scripts/train.py --cfg_path cfg/{scene}.yml",
+                "command": "python scripts/train_no_amp.py --cfg_path cfg/{scene}.yml",
                 "description": "Train the NeRF model",
             },
             "extract_vol.py": {
@@ -810,8 +811,8 @@ class VispyViewer(QMainWindow):
         )
         self.cfg_volume_resolution.setFixedWidth(80)  # Set fixed width for better alignment
         
-        self.cfg_remove_upper_aabb = QCheckBox(checked=False)
-        self.cfg_remove_below_aabb = QCheckBox(checked=True)
+        self.cfg_remove_upper_aabb = QCheckBox(checked=True)
+        self.cfg_remove_below_aabb = QCheckBox(checked=False)
         general_layout.addRow("Scene Name:", self.cfg_scene_name)
         general_layout.addRow("Volume Resolution:", self.cfg_volume_resolution)
         general_layout.addRow("Remove Upper AABB:", self.cfg_remove_upper_aabb)
@@ -860,10 +861,13 @@ class VispyViewer(QMainWindow):
         for spinbox in self.cfg_shift:
             spinbox.setFixedWidth(80)  # Set fixed width for better alignment
             shift_hbox.addWidget(spinbox)
+            
+        self.aabb_visualize = QCheckBox(checked=False)
         # transform_layout.addRow("Enable Rotation:", self.cfg_rotation)
         # transform_layout.addRow("Angles (x, y, z):", angles_hbox)
         transform_layout.addRow("Shift (x, y, z):", shift_hbox)
         transform_layout.addRow("Scale:", self.cfg_scale)
+        transform_layout.addRow("Visualize AABB:", self.aabb_visualize)
 
         # --- Outlier & Bounding Box Settings ---
         outlier_group = QGroupBox("Outlier & Bounding Box Settings")
@@ -1011,6 +1015,7 @@ class VispyViewer(QMainWindow):
         self.cfg_resize_enabled.stateChanged.connect(self.update_config_preview)
         self.cfg_resize_w.valueChanged.connect(self.update_config_preview)
         self.cfg_resize_h.valueChanged.connect(self.update_config_preview)
+        self.aabb_visualize.stateChanged.connect(self.update_config_preview)
         # self.cfg_rotation.stateChanged.connect(self.update_config_preview)
         # for w in self.cfg_angles + self.cfg_shift: w.valueChanged.connect(self.update_config_preview)
 
@@ -1050,10 +1055,12 @@ class VispyViewer(QMainWindow):
             "rays_file": f"{scene}_ray_data.npz",
             "volume_resolution": self.cfg_volume_resolution.value(),
             "remove_upper_aabb": self.cfg_remove_upper_aabb.isChecked(),
-            "remove_below_abb": self.cfg_remove_below_aabb.isChecked(),
-            "visualize": False,
-            "workspace": f"data/{scene}",
+            "remove_below_aabb": self.cfg_remove_below_aabb.isChecked(),
+            # "visualize": False,
+            "visualize": self.aabb_visualize.isChecked(),
+            "workspace": f"tmp/{scene}",
             "image_dir": "${workspace}/images",
+            "tmp_image_dir": f"tmp/{scene}/images",
             "resize_images": self.cfg_resize_enabled.isChecked(),
             "newSize": [self.cfg_resize_w.value(), self.cfg_resize_h.value()],
             #'rotation': self.cfg_rotation.isChecked(),
