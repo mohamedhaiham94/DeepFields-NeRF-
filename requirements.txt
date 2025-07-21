@@ -10,3 +10,4 @@ matplotlib
 napari[all]
 pyvista
 qt-material
+PySide6
