@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # print(cfg.tmp_image_dir)
     
     process_images(
-        folder=cfg.image_dir,
+        folder=cfg.image_dir_resize,
         outdir=cfg.tmp_image_dir,
         resize=cfg.resize_images,
         size=tuple(cfg.newSize),

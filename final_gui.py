@@ -1060,6 +1060,7 @@ class VispyViewer(QMainWindow):
             "remove_below_aabb": self.cfg_remove_below_aabb.isChecked(),
             # "visualize": False,
             "visualize": self.aabb_visualize.isChecked(),
+            "image_dir_resize": f"./data/{scene}/images",
             "workspace": f"tmp/{scene}",
             "image_dir": "${workspace}/images",
             "tmp_image_dir": f"tmp/{scene}/images",
