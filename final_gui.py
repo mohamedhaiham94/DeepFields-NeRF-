@@ -197,10 +197,22 @@ class VispyViewer(QMainWindow):
         controls_layout = QVBoxLayout(controls_widget)
 
         # --- Main Controls ---
-        controls_layout.addWidget(QPushButton("Load Volume", clicked=self.load_volume))
-        controls_layout.addWidget(
-            QPushButton("Delete Volume", clicked=self.delete_volume)
-        )
+        vol_bt = QPushButton("Load Volume", clicked=self.load_volume)
+        vol_bt.setToolTip("Load a volume from a .pth or .pt file")
+        controls_layout.addWidget(vol_bt)
+
+        # controls_layout.addWidget(
+        #     QPushButton("Load Volume", clicked=self.load_volume).setToolTip(
+        #         "Load a volume from a .pth or .pt file"
+        #     )
+        # )
+        delete_bt = QPushButton("Delete Volume", clicked=self.delete_volume)
+        delete_bt.setToolTip("Delete the currently loaded volume")
+        controls_layout.addWidget(delete_bt)
+
+        # controls_layout.addWidget(
+        #     QPushButton("Delete Volume", clicked=self.delete_volume)
+        # )
 
         # --- Point Size Controls ---
         point_size_group = QGroupBox("Point Size")
@@ -237,6 +249,7 @@ class VispyViewer(QMainWindow):
         aabb_layout = QFormLayout()
         aabb_layout.setSpacing(10)
         load_json_button = QPushButton("Load AABB from JSON")
+        load_json_button.setToolTip("Load AABB data from a transform json file")
         load_json_button.clicked.connect(self.load_aabb_json)
         aabb_layout.addRow(load_json_button)
 
@@ -806,15 +819,28 @@ class VispyViewer(QMainWindow):
         general_group = QGroupBox("General Settings")
         general_layout = QFormLayout()
         self.cfg_scene_name = QLineEdit("my_scene")
-        self.cfg_scene_name.setPlaceholderText("Enter scene name") # Placeholder text
+        self.cfg_scene_name.setToolTip("Enter the name of the scene for configuration")
+
+        self.cfg_scene_name.setPlaceholderText("Enter scene name")  # Placeholder text
         self.cfg_scene_name.setFixedWidth(300)  # Set fixed width for better alignment
         self.cfg_volume_resolution = QSpinBox(
             minimum=32, maximum=2048, value=512, singleStep=32
         )
-        self.cfg_volume_resolution.setFixedWidth(80)  # Set fixed width for better alignment
-        
+        self.cfg_volume_resolution.setFixedWidth(
+            80
+        )  # Set fixed width for better alignment
+        self.cfg_volume_resolution.setToolTip(
+            "Set the resolution for the volume grid.\nThis will determine the size of the 3D grid used for the scene."
+        )
         self.cfg_remove_upper_aabb = QCheckBox(checked=True)
+        self.cfg_remove_upper_aabb.setToolTip(
+            "Remove points above the AABB from transform.json during volume slicing."
+        )
+
         self.cfg_remove_below_aabb = QCheckBox(checked=False)
+        self.cfg_remove_below_aabb.setToolTip(
+            "Remove points below the AABB from transform.json during volume slicing."
+        )
         general_layout.addRow("Scene Name:", self.cfg_scene_name)
         general_layout.addRow("Volume Resolution:", self.cfg_volume_resolution)
         general_layout.addRow("Remove Upper AABB:", self.cfg_remove_upper_aabb)
@@ -825,14 +851,17 @@ class VispyViewer(QMainWindow):
         # --- Image Resizing ---
         resize_group = QGroupBox("Image Resizing")
         resize_layout = QFormLayout()
-        
+
         # Add checkbox for enabling/disabling image resizing
         self.cfg_resize_enabled = QCheckBox("Enable Image Resizing", checked=True)
+        self.cfg_resize_enabled.setToolTip(
+            "Resize images if checked; otherwise, just copy the original images to the tmp folder."
+        )
         resize_layout.addRow(self.cfg_resize_enabled)
-        
+
         self.cfg_resize_w = QSpinBox(minimum=128, maximum=4096, value=512)
         self.cfg_resize_h = QSpinBox(minimum=128, maximum=4096, value=512)
-        
+
         resize_hbox = QHBoxLayout()
         resize_hbox.addWidget(QLabel("W"))
         resize_hbox.addWidget(self.cfg_resize_w)
@@ -856,16 +885,25 @@ class VispyViewer(QMainWindow):
             minimum=0.1, maximum=10.0, value=0.9, singleStep=0.05
         )
         self.cfg_scale.setFixedWidth(80)  # Set fixed width for better alignment
-        
+        self.cfg_scale.setToolTip(
+            "Scale the scene uniformly.\n"
+            "This can help fit the scene within the Cube."
+        )
         angles_hbox = QHBoxLayout()
         # for spinbox in self.cfg_angles: angles_hbox.addWidget(spinbox)
         shift_hbox = QHBoxLayout()
         for spinbox in self.cfg_shift:
+            spinbox.setToolTip(
+                "Shift the scene along the x, y, and z axes.\n"
+                "This can help center the scene within the Cube."
+            )
             spinbox.setFixedWidth(80)  # Set fixed width for better alignment
             shift_hbox.addWidget(spinbox)
-            
+
         self.aabb_visualize = QCheckBox(checked=False)
-        # transform_layout.addRow("Enable Rotation:", self.cfg_rotation)
+        self.aabb_visualize.setToolTip(
+            "Visualize poses, AABB, and points using colmap2nerf; display the volume in post_process_vol.py."
+        )  # transform_layout.addRow("Enable Rotation:", self.cfg_rotation)
         # transform_layout.addRow("Angles (x, y, z):", angles_hbox)
         transform_layout.addRow("Shift (x, y, z):", shift_hbox)
         transform_layout.addRow("Scale:", self.cfg_scale)
@@ -879,21 +917,35 @@ class VispyViewer(QMainWindow):
         self.cfg_target_retention = QDoubleSpinBox(
             minimum=0.0, maximum=1.0, singleStep=0.01, value=0.95
         )
-        self.cfg_target_retention.setFixedWidth(80)  # Set fixed width for better alignment
+        self.cfg_target_retention.setFixedWidth(
+            80
+        )  # Set fixed width for better alignment
         self.cfg_target_retention.setDecimals(3)
+        self.cfg_target_retention.setToolTip(
+            "Fraction of points to retain after outlier filtering (e.g., 0.95 keeps 95% of points)."
+        )
         outlier_layout.addRow("Target Retention:", self.cfg_target_retention)
 
         # outlier_nb_neighbors
         self.cfg_outlier_nb_neighbors = QSpinBox(minimum=1, maximum=100, value=20)
+        self.cfg_outlier_nb_neighbors.setToolTip(
+            "Number of nearest neighbors used in statistical outlier removal."
+        )
         outlier_layout.addRow("Outlier Neighbors:", self.cfg_outlier_nb_neighbors)
-        self.cfg_outlier_nb_neighbors.setFixedWidth(80)  # Set fixed width for better alignment
-        
+        self.cfg_outlier_nb_neighbors.setFixedWidth(
+            80
+        )  # Set fixed width for better alignment
+
         # outlier_std_ratio
         self.cfg_outlier_std_ratio = QDoubleSpinBox(
             minimum=0.1, maximum=10.0, singleStep=0.1, value=2.0
         )
-        self.cfg_outlier_std_ratio.setFixedWidth(80)  # Set fixed width for better alignment
-        
+        self.cfg_outlier_std_ratio.setFixedWidth(
+            80
+        )  # Set fixed width for better alignment
+        self.cfg_outlier_std_ratio.setToolTip(
+            "Threshold factor for standard deviation used in outlier filtering. Higher values remove fewer points."
+        )
         outlier_layout.addRow("Outlier Std Ratio:", self.cfg_outlier_std_ratio)
 
         # percentile_bbox
@@ -915,7 +967,7 @@ class VispyViewer(QMainWindow):
         bbox_hbox.addWidget(QLabel("Padding"))
         bbox_hbox.addWidget(self.cfg_percentile_padding)
         bbox_hbox.setAlignment(Qt.AlignLeft)
-        
+
         outlier_layout.addRow("Percentile BBox:", bbox_hbox)
         outlier_group.setLayout(outlier_layout)
 
@@ -930,16 +982,16 @@ class VispyViewer(QMainWindow):
             minimum=1024, maximum=65536, value=4096, singleStep=1024
         )
         self.cfg_batch_size.setFixedWidth(100)  # Set fixed width for better alignment
-        
+
         self.cfg_num_epochs = QSpinBox(minimum=1, maximum=100, value=1)
         self.cfg_num_epochs.setFixedWidth(100)  # Set fixed width for better alignment
-        
+
         self.cfg_lr = QDoubleSpinBox(
             minimum=1e-6, maximum=1e-2, value=0.0005, singleStep=1e-4, decimals=6
         )  # 0.0005
         self.cfg_lr.setValue(0.0005)  # Set default learning rate
         self.cfg_lr.setFixedWidth(100)  # Set fixed width for better alignment
-        
+
         train_layout.addRow("Batch Size:", self.cfg_batch_size)
         train_layout.addRow("Number of Epochs:", self.cfg_num_epochs)
         train_layout.addRow("Learning Rate:", self.cfg_lr)
@@ -950,23 +1002,43 @@ class VispyViewer(QMainWindow):
         model_group = QGroupBox("Model Options")
         model_layout = QFormLayout()
         self.cfg_ngp = QCheckBox(checked=True)
+        self.cfg_ngp.setToolTip(
+            "Use NGP (Neural Graphics Primitives) for training.\n"
+            "If unchecked, will use a standard NeRF model.\n"
+            "NGP is recommended for faster training and better performance."
+        )
         self.N_samples = QSpinBox(minimum=32, maximum=1028, value=64, singleStep=1)
+        self.N_samples.setToolTip(
+            "Number of samples per ray during training.\n" "Stratified sampling."
+        )
         self.N_samples.setFixedWidth(80)  # Set fixed width for better alignment
-        
+
         self.N_importance = QSpinBox(minimum=32, maximum=1028, value=128, singleStep=1)
         self.N_importance.setFixedWidth(80)
-        
+        self.N_importance.setToolTip(
+            "Number of importance samples per ray during training.\n"
+            "This is used for adaptive sampling to focus on areas with high detail."
+        )
+
         self.cfg_hidden_dim = QSpinBox(
             minimum=32, maximum=512, value=256, singleStep=32
         )
         self.cfg_hidden_dim.setFixedWidth(80)  # Set fixed width for better alignment
-        
+
         self.cfg_pos_L = QSpinBox(minimum=4, maximum=16, value=10)
         self.cfg_pos_L.setFixedWidth(80)
-        
+        self.cfg_pos_L.setToolTip(
+            "Length of positional embeddings for the vanilla nerf.\n"
+            "This controls how much detail is captured in the position of rays."
+        )
+
         self.cfg_dir_L = QSpinBox(minimum=2, maximum=10, value=4)
         self.cfg_dir_L.setFixedWidth(80)
-        
+        self.cfg_dir_L.setToolTip(
+            "Length of directional embeddings for the vanilla nerf.\n"
+            "This controls how much detail is captured in the direction of rays."
+        )
+
         model_layout.addRow("Use NGP:", self.cfg_ngp)
         model_layout.addRow("N_samples:", self.N_samples)
         model_layout.addRow("N_importance:", self.N_importance)
@@ -988,22 +1060,22 @@ class VispyViewer(QMainWindow):
 
         # Button layout for Load and Save
         button_layout = QHBoxLayout()
-        
+
         load_button = QPushButton("Load Config from YAML")
         load_button.clicked.connect(self.load_config_yaml)
         load_button.setStyleSheet(
             "QPushButton { background-color: #2196F3; color: white; font-weight: bold; }"
         )
-        
+
         save_button = QPushButton("Save Config to YAML")
         save_button.clicked.connect(self.save_config_yaml)
         save_button.setStyleSheet(
             "QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }"
         )
-        
+
         button_layout.addWidget(load_button)
         button_layout.addWidget(save_button)
-        
+
         preview_layout.addLayout(button_layout)
         preview_layout.addWidget(self.config_preview)
         preview_group.setLayout(preview_layout)
@@ -1120,58 +1192,68 @@ class VispyViewer(QMainWindow):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Load Config File", "cfg/", "YAML Files (*.yml *.yaml)"
         )
-        
+
         if not file_path:
             return
-            
+
         try:
             with open(file_path, "r") as f:
                 config = yaml.safe_load(f)
-            
+
             # Block signals to prevent triggering update_config_preview multiple times
             self.block_all_signals(True)
-            
+
             # Update GUI values from loaded config
             if "scene_name" in config:
                 self.cfg_scene_name.setText(str(config["scene_name"]))
-            
+
             if "volume_resolution" in config:
                 self.cfg_volume_resolution.setValue(config["volume_resolution"])
-            
+
             if "remove_upper_aabb" in config:
                 self.cfg_remove_upper_aabb.setChecked(config["remove_upper_aabb"])
-            
+
             if "remove_below_abb" in config:
                 self.cfg_remove_below_aabb.setChecked(config["remove_below_abb"])
-            
+
             # Image resizing settings
             if "resize_images" in config:
                 self.cfg_resize_enabled.setChecked(config["resize_images"])
-            
-            if "newSize" in config and isinstance(config["newSize"], list) and len(config["newSize"]) >= 2:
+
+            if (
+                "newSize" in config
+                and isinstance(config["newSize"], list)
+                and len(config["newSize"]) >= 2
+            ):
                 self.cfg_resize_w.setValue(config["newSize"][0])
                 self.cfg_resize_h.setValue(config["newSize"][1])
-            
+
             # Scene transformation
-            if "shift" in config and isinstance(config["shift"], list) and len(config["shift"]) >= 3:
+            if (
+                "shift" in config
+                and isinstance(config["shift"], list)
+                and len(config["shift"]) >= 3
+            ):
                 for i, spinbox in enumerate(self.cfg_shift):
                     if i < len(config["shift"]):
                         spinbox.setValue(config["shift"][i])
-            
+
             if "scale" in config:
                 self.cfg_scale.setValue(config["scale"])
-            
+
             # Outlier and bounding box settings
             if "target_retention" in config:
                 self.cfg_target_retention.setValue(config["target_retention"])
-            
+
             if "outlier_nb_neighbors" in config:
                 self.cfg_outlier_nb_neighbors.setValue(config["outlier_nb_neighbors"])
-            
+
             if "outlier_std_ratio" in config:
                 self.cfg_outlier_std_ratio.setValue(config["outlier_std_ratio"])
-            
-            if "percentile_bbox" in config and isinstance(config["percentile_bbox"], dict):
+
+            if "percentile_bbox" in config and isinstance(
+                config["percentile_bbox"], dict
+            ):
                 bbox = config["percentile_bbox"]
                 if "lower" in bbox:
                     self.cfg_percentile_lower.setValue(bbox["lower"])
@@ -1179,44 +1261,44 @@ class VispyViewer(QMainWindow):
                     self.cfg_percentile_upper.setValue(bbox["upper"])
                 if "padding" in bbox:
                     self.cfg_percentile_padding.setValue(bbox["padding"])
-            
+
             # Training options
             if "batch_size" in config:
                 self.cfg_batch_size.setValue(config["batch_size"])
-            
+
             if "num_epochs" in config:
                 self.cfg_num_epochs.setValue(config["num_epochs"])
-            
+
             if "lr" in config:
                 self.cfg_lr.setValue(config["lr"])
-            
+
             # Model options
             if "ngp" in config:
                 self.cfg_ngp.setChecked(config["ngp"])
-            
+
             if "N_samples" in config:
                 self.N_samples.setValue(config["N_samples"])
-            
+
             if "N_importance" in config:
                 self.N_importance.setValue(config["N_importance"])
-            
+
             if "hidden_dim" in config:
                 self.cfg_hidden_dim.setValue(config["hidden_dim"])
-            
+
             if "pos_L" in config:
                 self.cfg_pos_L.setValue(config["pos_L"])
-            
+
             if "dir_L" in config:
                 self.cfg_dir_L.setValue(config["dir_L"])
-            
+
             # Re-enable signals and update preview
             self.block_all_signals(False)
             self.update_config_preview()
-            
+
             QMessageBox.information(
                 self, "Success", f"Configuration loaded from:\n{file_path}"
             )
-            
+
         except Exception as e:
             QMessageBox.critical(
                 self, "Error", f"Failed to load configuration file:\n{e}"
@@ -1225,18 +1307,34 @@ class VispyViewer(QMainWindow):
     def block_all_signals(self, block):
         """Helper method to block/unblock signals from all config widgets"""
         widgets = [
-            self.cfg_scene_name, self.cfg_volume_resolution, self.cfg_remove_upper_aabb,
-            self.cfg_remove_below_aabb, self.cfg_resize_enabled, self.cfg_resize_w, self.cfg_resize_h,
-            self.cfg_scale, self.cfg_target_retention, self.cfg_outlier_nb_neighbors,
-            self.cfg_outlier_std_ratio, self.cfg_percentile_lower, self.cfg_percentile_upper,
-            self.cfg_percentile_padding, self.cfg_batch_size, self.cfg_num_epochs, self.cfg_lr,
-            self.cfg_ngp, self.N_samples, self.N_importance, self.cfg_hidden_dim,
-            self.cfg_pos_L, self.cfg_dir_L
+            self.cfg_scene_name,
+            self.cfg_volume_resolution,
+            self.cfg_remove_upper_aabb,
+            self.cfg_remove_below_aabb,
+            self.cfg_resize_enabled,
+            self.cfg_resize_w,
+            self.cfg_resize_h,
+            self.cfg_scale,
+            self.cfg_target_retention,
+            self.cfg_outlier_nb_neighbors,
+            self.cfg_outlier_std_ratio,
+            self.cfg_percentile_lower,
+            self.cfg_percentile_upper,
+            self.cfg_percentile_padding,
+            self.cfg_batch_size,
+            self.cfg_num_epochs,
+            self.cfg_lr,
+            self.cfg_ngp,
+            self.N_samples,
+            self.N_importance,
+            self.cfg_hidden_dim,
+            self.cfg_pos_L,
+            self.cfg_dir_L,
         ]
-        
+
         # Add shift spinboxes
         widgets.extend(self.cfg_shift)
-        
+
         for widget in widgets:
             widget.blockSignals(block)
 
@@ -1280,4 +1378,3 @@ if __name__ == "__main__":
     viewer = VispyViewer()
     viewer.show()
     sys.exit(app.exec())
-
