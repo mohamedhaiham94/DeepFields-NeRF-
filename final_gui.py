@@ -409,6 +409,7 @@ class VispyViewer(QMainWindow):
             face_color=visible_colors,
             edge_color=visible_colors,
             size=self.point_size,
+            # size=0.1,
         )
         self.canvas.update()
 
@@ -487,7 +488,8 @@ class VispyViewer(QMainWindow):
                 "description": "Run COLMAP reconstruction",
             },
             "colmap2nerf.py": {
-                "command": "python scripts/colmap2nerf.py --cfg_path cfg/{scene}.yml",
+                # "command": "python scripts/colmap2nerf.py --cfg_path cfg/{scene}.yml",
+                "command": "python scripts/colmap2nerf_corrected.py --cfg_path cfg/{scene}.yml",
                 "description": "Transform scene alignment and compute AABB",
             },
             "precompute_rays.py": {
@@ -495,8 +497,8 @@ class VispyViewer(QMainWindow):
                 "description": "Precompute rays and save as NPZ",
             },
             "train.py": {
-                # "command": "python scripts/train.py --cfg_path cfg/{scene}.yml",
-                "command": "python scripts/train_no_amp.py --cfg_path cfg/{scene}.yml",
+                "command": "python scripts/train.py --cfg_path cfg/{scene}.yml",
+                # "command": "python scripts/train_no_amp.py --cfg_path cfg/{scene}.yml",
                 "description": "Train the NeRF model",
             },
             "extract_vol.py": {
