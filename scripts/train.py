@@ -71,7 +71,7 @@ def raw2outputs(rgb, sigma, z_vals, white_bg=False):
     """
     # Compute the alpha values
     dists = z_vals[..., 1:] - z_vals[..., :-1]
-    dist_last = torch.full_like(dists[..., :1], 1e6)
+    dist_last = torch.full_like(dists[..., :1], 1e10)
     dists = torch.cat([dists, dist_last], -1)
 
     # Calculate alpha (opacity)
@@ -299,10 +299,10 @@ def train(cfg: OmegaConf):
             scaler.scale(total_loss).backward()
             # Gradient clipping for stability
             scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(
-                get_params(),
-                max_norm=1.0,
-            )
+            # torch.nn.utils.clip_grad_norm_(
+            #     get_params(),
+            #     max_norm=1.0,
+            # )
 
             with torch.no_grad():
                 psnr = -10.0 * torch.log10(loss_fine)

@@ -42,7 +42,8 @@ class InstantNGP(nn.Module):
             n_input_dims=self.pos_encoding.n_output_dims,
             n_output_dims=16,
             network_config={
-                "otype": "FullyFusedMLP",
+                # "otype": "FullyFusedMLP",
+                "otype": "CutlassMLP",
                 "activation": "ReLU",
                 "output_activation": "ReLU",
                 "n_neurons": 64,
@@ -53,7 +54,8 @@ class InstantNGP(nn.Module):
             n_input_dims=32,
             n_output_dims=3,
             network_config={
-                "otype": "FullyFusedMLP",
+                # "otype": "FullyFusedMLP",
+                "otype": "CutlassMLP",
                 "activation": "ReLU",
                 "output_activation": "Sigmoid",
                 "n_neurons": 64,
