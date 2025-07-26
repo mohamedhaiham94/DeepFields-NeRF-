@@ -17,6 +17,16 @@ from instantngp import InstantNGP
 import torch._dynamo
 torch._dynamo.config.suppress_errors = True
 
+
+
+#######################################################
+torch.backends.cuda.matmul.allow_tf32 = False
+torch.backends.cudnn.allow_tf32 = False
+torch.set_float32_matmul_precision('high')  # or avoid using torch.amp.autocast
+
+#######################################################
+
+
 def sample_pdf(bins, weights, N_samples, device):
     """
     Sample N_samples points from a distribution defined by weights and bins
