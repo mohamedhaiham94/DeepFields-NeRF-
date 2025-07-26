@@ -446,7 +446,9 @@ class VispyViewer(QMainWindow):
         self.size_label.setText(f"Size: {self.point_size}")
         if self.current_visual is not None:
             self.current_visual.set_data(size=self.point_size)
+            # self.current_visual.set_data(size=0.1)
             self.canvas.update()
+        self.update_z_slice()
 
     def increase_point_size(self):
         if self.point_size < 10:
@@ -481,7 +483,7 @@ class VispyViewer(QMainWindow):
         self.scripts = {
             "resize_images.py": {
                 "command": "python scripts/resize_images.py --cfg_path cfg/{scene}.yml",
-                "description": "Resize input images",
+                "description": "Resize input images or copy original images to tmp folder",
             },
             "run_colmap.py": {
                 "command": "python scripts/run_colmap.py --workspace ./tmp/{scene}/",
