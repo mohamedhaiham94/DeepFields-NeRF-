@@ -3,40 +3,54 @@
 A pipeline for neural radiance field (NeRF) based 3D volume reconstruction.
 
 ---
-### Python Environment Setup (Python 3.11)
+### Python Environment Setup
 
-**1. Create a Virtual Environment**
-```bash
-python -m venv .venv
-```
-**2. Activate the Virtual Environment**
+**1. Install Anaconda and CudaToolkit (CUDA 12.9 for RTX5090) and (CUDA 12.8 for RTX4090)**
+
+**2. Install VS 2022 Fall 2023 LTSC (v17.8) 'C++ for desktop'**
+
+
+**3. set TCNN_CUDA_ARCHITECTURES**
+
+| GPU | CUDA arch  |
+|---------------|--------------|
+| H100           | 90   |
+| 50X0           | 120  |
+| 40X0           | 89  |
+| 30X0           | 86   |
+| A100           | 80   |
+| 20X0           | 75   |
+| TITAN V / V100 | 70   |
+| 10X0 / TITAN Xp| 61   |
+| 9X0           | 52   |
+| K80           | 37   |
+
 ```bash 
-# Windows
-.venv\Scripts\activate
-# On macOS/Linux
-source .venv/bin/activate
+set TCNN_CUDA_ARCHITECTURES=XX
 ```
 
-**3.  Install Project Dependencies**
+**4. Created a Conda Environment**
+```bash 
+conda create --name deepfields -y python=3.11
+conda activate deepfields
+python -m pip install --upgrade pip
+```
+
+**5. Install tiny-cuda-nn**
+```bash 
+pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+```
+
+
+**6  Install PyTorch (CUDA 12.9 for RTX5090) and (CUDA 12.8 for RTX4090)**
+
+
+**7.  Install Project Dependencies**
 ```bash
 pip install -r requirements.txt
 ```
-**4. Install [Pytorch](https://pytorch.org/get-started/locally/) and [tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn) for [Instant-NGP](https://github.com/NVlabs/instant-ngp)**
 
-**4.1  Install PyTorch (CUDA 12.6)**
-```bash
-pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-```
-**4.2 Install [tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn)**
-```bash
-git clone --recursive https://github.com/nvlabs/tiny-cuda-nn
-cd tiny-cuda-nn\bindings\torch
-# Install via setup script
-tiny-cuda-nn/bindings/torch$ python setup.py install
-```
- Make sure torch is installed before building tiny-cuda-nn, and your system has a compatible CUDA toolkit (e.g., 12.6).
-
-**5. Install [Colmap](https://github.com/colmap/colmap)**
+**8. Install [Colmap](https://github.com/colmap/colmap)**
 Download and install COLMAP for structure-from-motion and multi-view stereo reconstruction: 
 [COLMAP Releases (Windows/Linux/macOS)](https://github.com/colmap/colmap/releases)
 
