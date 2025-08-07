@@ -3,33 +3,44 @@
 A pipeline for neural radiance field (NeRF) based 3D volume reconstruction.
 
 ---
-### Python Environment Setup
+##  Python Environment Setup
 
-**1. Install Anaconda and CudaToolkit (CUDA 12.9 for RTX5090) and (CUDA 12.8 for RTX4090)**
+### 1.  Install Anaconda & CUDA Toolkit
 
-**2. Install VS 2022 Fall 2023 LTSC (v17.8) 'C++ for desktop'**
+- **For RTX 5090** → Install **CUDA Toolkit 12.9**  
+- **For RTX 4090** → Install **CUDA Toolkit 12.8**  
+Download from [NVIDIA CUDA Toolkit Downloads](https://developer.nvidia.com/cuda-downloads).
+
+### 2.  Install Visual Studio 2022
+
+Install **Visual Studio 2022 Fall 2023 LTSC (v17.8)** with the **"Desktop development with C++"** workload.
 
 
-**3. set TCNN_CUDA_ARCHITECTURES**
+### 3.  Set `TCNN_CUDA_ARCHITECTURES`
 
-| GPU | CUDA arch  |
-|---------------|--------------|
-| H100           | 90   |
-| 50X0           | 120  |
-| 40X0           | 89  |
-| 30X0           | 86   |
-| A100           | 80   |
-| 20X0           | 75   |
-| TITAN V / V100 | 70   |
-| 10X0 / TITAN Xp| 61   |
-| 9X0           | 52   |
-| K80           | 37   |
+Set the environment variable to match your GPU architecture:
 
-```bash 
-set TCNN_CUDA_ARCHITECTURES=XX
+#### Architecture Table:
+
+| GPU                | CUDA Arch |
+|--------------------|-----------|
+| H100               | 90        |
+| **RTX 50X0**        | 120       |
+| **RTX 40X0**        | 89        |
+| RTX 30X0           | 86        |
+| A100               | 80        |
+| RTX 20X0           | 75        |
+| TITAN V / V100     | 70        |
+| GTX 10X0 / TITAN Xp| 61        |
+| GTX 9X0            | 52        |
+| K80                | 37        |
+
+>  Set it in your anaconda terminal:
+```bash
+set TCNN_CUDA_ARCHITECTURES=120    # Example for RTX 5090
 ```
 
-**4. Created a Conda Environment**
+**4. Create Conda Environment**
 ```bash 
 conda create --name deepfields -y python=3.11
 conda activate deepfields
@@ -42,7 +53,7 @@ pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/to
 ```
 
 
-**6  Install PyTorch (CUDA 12.9 for RTX5090) and (CUDA 12.8 for RTX4090)**
+**6  Install PyTorch (CUDA 12.9 'pytorch nightly version' for RTX5090) and (CUDA 12.8 for RTX4090)**
 
 
 **7.  Install Project Dependencies**
@@ -96,10 +107,18 @@ project_root/
 │       └── logs/                   # TensorBoard logs for training visualization.
 │
 └── README.md                        # Project documentation
+└── final_gui.py                       
+└── open3d_gui.py                       
+└── run_gui.py                       
 ```
 
+### Running the Pipeline via GUI.
 
-### Running the Pipeline.
+```bash
+python final_gui.py
+```
+
+### Running the Pipeline Manually (Step-by-Step).
 
 1. Resize the images:
 ```bash
