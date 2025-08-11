@@ -409,6 +409,7 @@ class VispyViewer(QMainWindow):
             face_color=visible_colors,
             edge_color=visible_colors,
             size=self.point_size,
+            edge_width=0.0
             # size=0.1,
         )
         self.canvas.update()
